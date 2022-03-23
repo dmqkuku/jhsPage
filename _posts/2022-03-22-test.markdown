@@ -3,6 +3,7 @@ permalink: /diary/
 title: "2023-03-22 개발 일기 테스트"
 tags: [Diary]
 excerpt: "diarytest"
+classess: wide
 
 ---
 
