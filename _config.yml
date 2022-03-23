@@ -102,7 +102,7 @@ analytics:
 
 # Site Author
 author:
-  name             : "Hyunsic Jang"
+  name             : "장현식 (Hyunsic Jang)"
   avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "평범한 1년차 웹 개발자..."
   location         : "South Korea. Seoul"
