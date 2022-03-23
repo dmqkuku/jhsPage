@@ -11,7 +11,7 @@ classess: wide
 
 오늘 작성할 내용은 앞으로의 계획이 될 것 같습니다.
 
-<font color="sky">#define 앞으로. '2022-03-23 부터'</font>
+<font color="blue">#define 앞으로. '2022-03-23 부터'</font>
 
 앞으로. 매일 아침 출근 전에 가급적 하루 공부할 내용을 적어서 올리기로 한다.  
 
@@ -32,7 +32,7 @@ Java, Spring, Javascript, Sql을 업무에 사용중입니다. 주로 BO를 많�
 
 Node.JS, Vue.JS를 이용해 자그마한 토이 프로젝트를 몇가지 진행했습니다.  
 
-<font color="yellow">@나아가고 싶은 방향  </font>
+<font color="#826803">@나아가고 싶은 방향  </font>
 
 장기적인 두루뭉실한 목표 : 나 때문에 개발자들이 한국어를 배운다면? ㅎㅎ 기분 좋을 듯 
 
@@ -45,6 +45,8 @@ Node.JS, Vue.JS를 이용해 자그마한 토이 프로젝트를 몇가지 진�
 단기적인 목표 (징검다리) : 
 
 <font color="crimson">@공부 방향  </font>
+
+
 
 
 <font color="grey">
