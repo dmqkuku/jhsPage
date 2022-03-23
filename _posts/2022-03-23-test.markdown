@@ -1,6 +1,6 @@
 ---
 permalink: /diary/
-title: "2023-03-22 개발 일기 테스트"
+title: "2023-03-23 개발 일기 테스트"
 tags: [Diary]
 excerpt: "diarytest"
 classess: wide
@@ -42,7 +42,6 @@ Node.JS, Vue.JS를 이용해 자그마한 토이 프로젝트를 몇가지 진�
 
 초 단기 목표 : 저도 이래뵈도 웹 개발자니까 내가 쓸만하게 만들어서. 굴려보자...
 
-단기적인 목표 (징검다리) : 
 
 <font color="crimson">@공부 방향  </font>
 
