@@ -2,7 +2,7 @@
 permalink: /diary/
 title: "2023-03-24 개발 일기 Day 1"
 tags: [Diary]
-excerpt: "diaryDay1"
+excerpt: "일기 1일차"
 classess: wide
 
 ---
