@@ -1,0 +1,74 @@
+2022-03-24
+Chap2. Creating and Destroying Objects
+이 장에서는 언제(when) 어떻게(how) 객체를 만들고, 
+           언제(when) 어떻게(how) 객체를 만들지 말아야 하며,
+           어떻게 적절한 시기에 파괴할 수 있는지.
+
+    Item1. Consider static Factory Methos instead of constructors
+        클래스의 인스턴스를 만들기 위해(객체의 인스턴스가 아님!) 보통 생성자를 외부에 노출시킨다.
+        여기서 소개할 다른 방법은 public static factory method로 일종의 static method로서, 클래스의 인스턴스를 반환한다.
+
+        *디자인 패턴의 Factory Method 패턴과 혼동하지 말것! 
+
+        생성자를 숨기고 외부에 static factory method를 노출하는 데에는 장점도 있고, 단점도 있다.
+        장점1 : 생성자와 달리 메소드는 이름이 있다. (일리 있음.) 생성자보다, 이름을 잘 지은 메소드가 더 읽기 좋다. -> 생성자가 그냥 변수 초기화만 해준다면 그냥 생성자가 읽기 좋을 테지만, 생성자에 기능이 더 들어간 경우, 
+                예를 들어 INumber ( int, int ) 에서 두번째 int가 0이면 허수 대신 정수를 리턴한다면? INumber.probableInt(int, int)가 더 읽기 좋을 것이다. 
+        기존의 한계 : 한 클래스에 생성자를 오버로딩 할 수 있지만, (내 생각에는 99%) 안 좋은 디자인이다. 사용자는 절대절대 어떤 생성자가 호출되어야 실수하지 않을지 알 수 없다.
+            -> 이 한계를 static factory method를 사용하면 극복할 수 있다.
+
+        장점2 : static factory method는 생성자와 달리 호출될 때마다 인스턴스를 찍어내지 않아도 되도록 구현될 수 있다.
+            -> 불변 클래스가 기존에 생성된 인스턴스를 이용하게 하거나
+            -> 인스턴스를 캐시하여
+            => 인스턴스를 처리하여 불필요한 중복 객체 생성을 막을 수 있다. ***---> 예제 코드라도 함 봐야할 듯.
+            ~> 호출 될 때마다 인스턴스를 새로 만들어 반환하지 않고, 기존 인스턴스를 계속 반환 한다는 뜻인듯.
+        
+        장점3 : 생성자와 달리, 반환형의 자식 타입이기만 하면 무었이든 반환할 수 있다.
+            -> JAVA API 디자인 할 경우 아주 유리 (WEB API 아님!)
+
+        *** 자바의 콜렉션 프레임워크는 45개나 되는 구현체가 있다고 한다. 헐~ 그래서 무거운건가? <~ 확인 필요.
+
+        장점4 : 호출 할 때마다 다른 오브젝트를 반환하는 것도 가능하다. ***---> 이게 장점인가? 일관성 없는 거 아닌가? 장점1에서는 이름때문에 읽기 좋아진다고 하던데...
+
+        장점5 : 심지어. 메소드를 작성할 때 반환하는 클래스가 존재하지 않는 상태여도 된다.
+            -> JDBC 를 생각하라고 한다....
+            -> DI...
+            ***----> Spring에 사용될 듯, 다만 사용하는 입장에서 헷갈리기 딱 좋다고 생각한다.
+
+        단점1 : 자바 문법상. public/ protected 생성자가 없는 클래스는 자식 클래스를 만들 수 없다.
+            -> 자명하다. 자식 클래스 생성자에서 부모 클래스 생성자를 호출해야 하므로.
+
+        단점2 : 프로그래머가 static factory method를 코드뭉치에서 찾아내기 어렵다.
+
+    Item2. Consider a builder when faced with many constructor parameters.
+        만약에 객체를 만드는데 있어서, 대량의 조건부 매개변수가 존재한다면, static factory 와 생성자는 둘다 사용하기 불편하다.
+        === 소수의 필수 매개변수와 다수의 조건부 매개변수...
+
+        어정쩡한 해결책1: 다수의 생성자 오버로딩. -> 쓰기도 힘들고, 읽기도 힘들다.
+        어정쩡한 해결책2: 우선 비어있는 객체 만들고, Setter를 이용한다. -> 이것도 쓰기 힘들고, 읽기 힘들듯. 사실 읽기는 1번보다 힘들듯. 예를들어 setter가 한 20개 연속으로 있는데 위에 setId("jhs") 하나있는 데 아래쪽에 setId("jhs2")를 하나 더 적는 다고 생각해보자...
+                        -> 이 방법은 막강한? 변성(mutablity)?을 자랑한다. 
+
+        세번째 해결책: Builder. 
+            -> 방법: 필수 매개변수로 Builder Object를 만들고, 거기다가 조건부 매개변수들을 셋팅하고, build 메소드를 호출하면~ return this해주면~ chaining가능~
+
+            단점1: 자명하게도, 객체를 하나 더 만드니까, 메모리든 속도든 영 좋지 않다. 성능이냐 유지보수성/생산성이냐... (읽고 쓰기 좋고, 다루기 좋다 == 유지보수성이 좋다. 생산성이 좋다.)
+        
+    Item3. Enforce the singleton property with a private constructor or an enum type
+        Singleton == 단 한번 인스턴스화 되는 클래스.
+        테스트하기 힘들다고 함. 이거는 좀 경우를 봐야 이해갈듯.
+
+        구현 방법1: private constructor를 호출하는 public static final 클래스 변수.
+                ***-> 이상한게 AccesibleObject.setAccesible 로 왜왜왜왜왜 private/public이런걸 바꿀수 있는지 모르겠음.
+                이렇게 어거지로 private 풀어서 호출하는 경우를 막으려면/ 예외 던지도록 하셈.... <- 헐... 내 생각에는 애초에 private/public을 reflection을 통해 바꿀수 있는게 문제같음.
+            장점 : 간단하고, 자명함.
+
+
+        구현 방법2: private constructor를 호출하는 private static final 클래스 변수를 반환하는 getInstance 메서드.
+            장점1 : generic 하게 만들 수 있음 -> 코드 보고 싶당.
+            장점2 : 유연성
+            장점3 : 메서드 참조가 Supplier로 쓰일 수 있당. MyClass::getInstance가 MyClass Supplier로 쓰일 수 있당.
+
+
+
+
+
+
