@@ -1,6 +1,6 @@
 ---
 permalink: /diary/
-title: "2023-03-23 개발 일기 Day 1"
+title: "2023-03-24 개발 일기 Day 1"
 tags: [Diary]
 excerpt: "diaryDay1"
 classess: wide
@@ -11,3 +11,8 @@ Effective Java를 오늘 부터 차근차근 읽어나가기로 한다.
 
 
 Spring Boot로 토이 프로젝트를 하면서. Spring boot 공식 Docs를 계속 살픽도록 한다. 양이 많으니, 전부다 머리에 밀어넣는다는 생각보다는 필요한 것을 추출한다는 생각으로 임하도록 한다.
+
+
+Slow query : DBMS가 요청받은 Query를 일정 시간 내에 수행하지 못한 경우 
+
+일단 간단히 구글링하면 이렇게 나온다. 아주 애매한 표현이 아닐 수 없다. 공식 문서를 뒤져가면서 좀더 명확한 Slow Query 분간법과 정의, 해결방법을 차근차근 공부하기로 한다.
