@@ -1,10 +1,10 @@
 ---
-permalink: /diary/
 title: "2023-03-24 개발 일기 Day 1"
-tags: [Diary]
-excerpt: "일기 1일차"
+categories: [Diary]
+tags: [Diary, Java, Effective Java]
+excerpt: "일기 1일차 : Effective Java Chap2. Item 1, 2"
 classess: wide
-
+use_math: true
 ---
 
 Effective Java를 오늘 부터 차근차근 읽어나가기로 한다. 
@@ -24,3 +24,227 @@ https://arctype.com/blog/mysql-slow-query-log/
 Mysql 공식 Docs:
 https://dev.mysql.com/doc/refman/8.0/en/explain.html
 
+<hr/>
+<hr/>
+
+# Effective Java Chap2. Item 1, 2
+
+<hr/>
+<hr/>
+
+## Chap2. Creating and Destroying Objects
+
+
+이 장에서는 언제(when) 어떻게(how) 객체를 만들고, 
+           언제(when) 어떻게(how) 객체를 만들지 말아야 하며,
+           어떻게 적절한 시기에 파괴할 수 있는지. 서술하였다.
+
+
+### Item1. Consider static Factory Methos instead of constructors
+
+ 클래스의 인스턴스를 만들기 위해 보통 생성자를 외부에 노출시키는 방식을 취한다.
+여기서는 다른 방법인 public static factory method를 소개한다.
+
+예제:
+
+```java
+class Product {
+
+    private Product () {
+
+    }
+
+    public static Product getInstance() {
+        return new Product();
+    }
+
+}
+```
+
+
+* 주의사항 : 디자인 패턴의 Factory Method 패턴과는 다른 것이다.
+
+생성자를 private으로 숨기고, static factory method를 노출하는 데에는 장점과 단점이 있다.
+
+> 장점1: 
+> 생성자와 달리 메소드는 이름이 있다. 
+> 클래스의 이름을 그대로 써야 하는 생성자와 달리 이름을 잘 지은 메소드가 읽기 더 좋을 경우가 존재한다.
+
+<div class="notice--primary" markdown="1">
+**생각하기**
+예를 들어 다음과 같은 코드를 생각해보자.(java.math 참조)
+```java
+    //생성자 코드
+    public BigInteger (int bitLen, Random rnd) {
+        // Probable Prime 반환
+    }
+
+    //static factory method
+    public static BigInteger probablePrime(int bitLen, Random rnd) {
+        // Probable Prime 반환
+    }
+```
+생성자 코드를 보았을 때 Probable Prime을 반환한다는 사실은 코드를 보기 전에는 알기 어렵다.
+> Probable Prime(PRP)이란?
+>    > 정수의 한 집합으로서, "모든 소수가 만족하고, 대부분의 합성수(Composite Number)가 불만족하는 특정 조건을 만족하는 수의 모음이다."
+
+
+> 합성수란? 
+>    > "양의 정수의 곱으로 이루어진 양의 정수".
+
+
+> 특정 조건이란? 
+>    > "페르마의 소정리(Fermet's little theorem)"에 따르면, 다음과 같다.
+>    >  주어진 양의 정수 n에 대해서, n보다 작고 1보다 큰 양의 정수 a를 고르고, $a^(n-1)$을 n으로 나머지연산(modulo, mod)한다. 
+>    >  이 결과가 1이 아니라면 n은 합성수이고, 1이라면 n은 "소수일 수 있는 수"가 된다. 이를 probable prime to base라고 부른다.
+>    >    > 궁금한 점: 이걸 어디에다 쓸까? 
+</div>
+
+> 장점2:
+> 호출될 때마다 인스턴스를 찍어내지 않고, 기존 인스턴스를 다시 반환하도록 구현 할 수 있다.
+> 인스턴스를 캐시하여 반환하도록 할 수도 있다. 
+<div class="notice--primary" markdown="1">
+**생각하기**
+"인스턴스를 캐시하여 반환하도록 할 수도 있다. "에 대해서는 코드를 파봐야 할 것 같다.
+</div>
+
+> 장점3:
+> 생성자와 달리 반환형의 자식 타입이기만 하면 무었이든 반환할 수 있다.
+<div class="notice--primary" markdown="1">
+**생각하기**
+자바의 콜렉션 프레임워크는 45개나 되는 구현체가 있다고 한다... 
+느려지지 않을까? Java에서 이부분을 어떻게 다루고 있는지 알아보자...
+</div>
+
+> 장점4:
+> 호출할 때마다 다른 객체를 반환할 수도 있다.
+
+> 장점5:
+> factory 메소드를 작성할 때 반환하는 클래스가 존재하지 않는 상태여도 문제없다.
+<div class="notice--primary" markdown="1">
+**생각하기**
+JDBC, DI의 경우가 해당한다고 저자는 말하고 있다. JDBC, DI에 대해서 좀 더 조사해보자. 그리고 어느 부분이 이 설명에 해당하는지 알아보자.
+</div>
+
+> 단점1:
+> 자바 문법상 자명하게도, public/ protected 생성자가 없는 클래스는 자식 클래스를 만들 수 없다.
+
+
+> 단점2:
+> 프로그래머가 static factory method를 코드뭉치에서 찾아내기 어렵다.
+<div class="notice--primary" markdown="1">
+**생각하기**
+치명적인 단점 아닌가?
+</div>
+           
+
+### Item2. Consider a builder when faced with many constructor parameters.
+객체를 만들어야 하는데, 다량의 조건부 매개변수가 존재하는 환경이라면, static factory method도 생성자도 사용하기 불편하다.
+<div class="notice--primary" markdown="1">
+**생각하기**
+
+
+이러한 상황이 어떤 경우일까?
+
+```java
+    class Burger {
+        //필수 옵션
+        private Meat patties;
+        private Bread bun;
+        private Source source;
+        private Vegetable onion;
+        private Vegetable tomato;
+        private Vegetable lettuce;
+
+        //부가옵션
+        //Drink인 Coke/Cider/water는 한번에 하나만
+        //CookedMeat 선택한다면 하나만
+        //CookedVegeteble도 선택한다면 하나만
+        //케챱은 CookedMeat/CookedVegetable을 선택했다면 반드시,
+        private Drink coke;
+        private Drink cider;
+        private Drink water;
+        private CookedMeat buffaloWings;
+        private CookedMeat chickenNuggets;
+        private CookedVegetable hashBrowns;
+        private CookedVegetable frenchFries;
+        private Source ketchup;
+    }
+```
+위와 같은 맛 좋은 클래스를 만들어보자. 
+만들어 질 수 있는 경우의 수는?
+> Drink 셋 중에 하나 
+
+
+> CookedMeat 고른다면? -> 고르고 둘중에 하나 -> 즉 선택지는 셋
+
+
+> CookedVegetable 고른다면? -> 고르고 둘중에 하나 -> 즉 선택지는 셋
+
+
+즉 9가지 경우의 수가 있겠다.
+</div>
+
+> 어정쩡한 해결책1 : 생성자 오버로딩을 때려박아서 해결하자~ 
+>    > 쓰기도, 읽기도, 사용하기도 힘들다.
+
+
+> 어정쩡한 해결책2 : 빈 객체 혹은 필수값만 들어있는 객체를 만들고, 거기다가 setter로 값을 추가하자~
+>    > 쓰기도, 읽기도, 사용하기도 힘들다.
+>    > 막강한 mutablity로 사용하는 측에서 실수하기 아주 좋다.
+
+
+> 이 책에서 제시하는 해결책: Builder
+> 필수 매개변수로 Builder 객체를 만든다. 조건부 매개변수는 Builder 클래스의 메소드를 이용해 셋팅한다. 최후에 build 메소드를 호출하여 
+> 원하는 객체를 얻는다.
+
+```java
+    public static class BurgerBuilder {
+        private Meat patties;
+        private Bread bun;
+        private Source source;
+        private Vegetable onion;
+        private Vegetable tomato;
+        private Vegetable lettuce;
+
+        private Drink coke = null;
+        private Drink cider = null;
+        private Drink water = null;
+        private CookedMeat buffaloWings = null;
+        private CookedMeat chickenNuggets = null;
+        private CookedVegetable hashBrowns = null;
+        private CookedVegetable frenchFries = null;
+        private Source ketchup = null;
+
+        public BurgerBuilder(Meat patties, Bread bun, Source source, Vegetable onion, Vegetable tomato, Vegetable lettuce) {
+            this.patties = patties;
+            this.bun = bun;
+            this.source = source;
+            this.onion = onion;
+            this.tomato = tomato;
+            this.lettuce = lettuce;
+        }
+        public BurgerBuilder chooseDrink(Drink drink) {
+            switch(drink) {
+                case COKE: 
+                    this.coke = drink;
+                    break;
+                case CIDER:
+                    this.cider = drink;
+                    break;
+                case WATER:
+                    this.water = drink;
+                    break;
+            }
+            return this;
+        } 
+        public BurgerBuilder chooseCookedMeat(CookedMeat cookedMeat) {
+            //chooseDrink와 유사한 로직
+        }
+        public BurgerBuilder chooseCookedVegetables(CookedVegetabled cookedVegetables) {
+            //chooseDrink와 유사한 로직
+        }
+    }
+```
+
+> 치명적인 단점: 객체를 하나 더 만든다는 뜻은 메모리도 더 먹을 것이고, 속도도 느릴 것 이라는 이야기이다.

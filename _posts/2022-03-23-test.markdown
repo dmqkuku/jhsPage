@@ -1,6 +1,6 @@
 ---
-permalink: /diary/
 title: "2023-03-23 개발 일기 테스트"
+categories: [Diary]
 tags: [Diary]
 excerpt: "일기 계획"
 classess: wide
