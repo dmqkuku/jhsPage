@@ -1,0 +1,8 @@
+https://lastcow9000.github.io/java/Java-CLI-%EC%8B%A4%ED%96%89-%EC%98%A4%EB%A5%98-%EC%8B%9C(could-not-find-or-load-main-class-/.)/
+
+java는 full class name을 가지고 클래스 파일들을 찾기 때문에
+
+parent directory(package root directory)에서 실행해야 한다고한다.
+
+쉽게 말해서 Package명.클래스명 or Package명/클래스명 으로 해줘야 한다. 
+?????

@@ -134,4 +134,75 @@ So. WeakHashMap. What is it?
 간단히 얘기해서 HashMap의 일종으로. key가 WeakReference 타입인 맵이다.
 key에 대해서 Strong refernce가 하나도 남아있지 않게 된다면. 자동적으로 map에서 제거되게 된다.(누가요? GC가 제거하는 건가요? 설마 실시간 감시하지는 않겠쬬. == GC가 제거한다고 함. 근데 String key쓰면 어떻게 되나요?)
 
+세번째 자주있는 memory leaks의 원인은 listener와 callback들이다.
+API를 구현했는데. 클라이언트가 CB를 등록하기만 하고. 해제하지 않는다??? -> 계속 쌓일 수 있다.
+따라서 CB에 대한 WeakReference만 저장하도록 한다.
 
+
+Item8. Avoid finalizers and cleaners
+Java9부터는 Cleaner로 대체됬는데. 조금 개선되었지만, 여전히 느리고, 필요없고, 위험하다.
+만약 리소스를 manual 해제하고 싶으면 try-with-resource나. try-finally문을 사용하도록 하자.
+그냥 문제점 덩어리임... -> 함 써보고 무슨 문제가 있는지 보고싶당.
+
+Itme9. Prefer try-with-resources to try-finally
+try-fianlly는 여러 resource에 쓰일때 ugly!
+
+// try-finally is ugly when used with more than one resource!
+static void copy(String src, String dst) throws IOException {
+    InputStream in = new FileInputStream(src);
+    try {
+        OutputStream out = new FileOutputStream(dst);
+        try {
+            byte[] buf = new byte[BUFFER_SIZE];
+            int n;
+            while ((n = in.read(buf)) >= 0)
+            out.write(buf, 0, n);
+        } finally {
+            out.close();
+        }
+    } finally {
+        in.close();
+    }
+}
+만약 read에서 에러 터지고. close도 에러나면? 두번째 exception이 첫번째 exception을 말살해버린다!!!(안보이게 가려버린다는 뜻인듯.) <- 원인은???????
+
+Chap3. Methos Common to All Objects
+Object class내부의 nonfinal 메소드들은 명시적으로 General Methods라고 봐야 한다.(언제든지 오버라이드될수 있기 때문)
+여기서는 어떻게 nonfinal Object method들을 오버라이드 할 것인지 다룬다..
+
+Item10. Objey the general contract when overriding equals
+만약 equals 메소드를 오버라이드 하지 않으면. 각 클래스의 인스턴스는 오로지 자기 자신과만 equals true이다.
+//equals 메소드 오버라이드는 다음 상황에서 ideal하다
+//1. 각 클래스 인스턴스는 생길 때부터 unique
+//2. 만약 클래스가 logical equality test를 지원할 필요가 없을 경우.
+만약만약 euqals가 절대절대 invoke되면 안되는 경우. 예를들어 클래스가 private일경우
+@Override 
+public boolean equals(Object o) {
+    throw new AssertError();
+}
+
+logical equality???? object identity?
+
+equals contracts
+1. Reflexive : 어떠한 Non-Null 참조값 X에 대해서. X.equals(X) 는 항상 true이다
+2. Symmetric : 어떠한 Non-Null 참조값 X, Y에 대해서 X.equals(Y)는 다음 상황에서만 True이다. Y.equals(X)가 True인 상황에서만
+3. Transitive : 어떠한 Non-Null 참조값 X, Y, Z에 대해서 X.equals(Y)가 True이고, Y.equals(Z)가 true이면, X.equals(Z)도 true이다.
+4. Consistent : 어떠한 Non-Null 참조값 X, Y에 대해서 X.equals(Y)를 복수 회 호출할 경우에도 결과는 동일해야 한다.
+5. 어떠한 Non-Null 참조값 X에 대해서, X.equals(NULL)은 항상 false이다.
+
+결론 : 
+    1. 참조가 같은지 알아보기 위해 == 사용
+    2. 타입이 같은지 알아보기 위해 instanceof 
+    3. equals에서 instanceof로 체크하고 타입 캐스팅
+    4. equals를 작성하고 나서, Symmetric, Transitive, Consistent 체크
+
+
+Item 11. Always override hashCode when you override equals.
+contract
+    1. 만약 반복적으로 같은 객체에 대해서 호출 될 경우. 같은 값을 반환해야 한다.
+    2. 만약 equals값이 같다면 hashcode값도 같아야 한다.
+    3. unequal이라도 hashcode 값이 다르다는 보장은 없지만, 다른 경우가 hashtable 성능이 더 높다.
+
+Item 12. Always override toString.
+
+Item 13. Override clone Judiciously.
