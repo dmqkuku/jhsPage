@@ -1,0 +1,137 @@
+
+Item3. 이어서
+저자에 따르면 단일 element를 가진 enum 타입이 singleton 구현하기에 최고라고 한다.
+
+
+Item4. Enforce noninstaniablity with a private constructor
+보통 Util static method를 모아놓은 클래스는 bad practice로 인식된다.(나도 그렇게 생각)
+그치만 저자에 따르면, 이러한 클래스가 쓸모 있는 경우도 있다고 한다. 
+final class MyUtils {
+    public static void doSomething(){
+
+    }
+}
+final을 붙여 상속을 막는 것과 함께.
+이런 클래스는 인스턴스화도 방지되어야 한다. <- 왜?. 뭐 인스턴스화 해도 쓸모는 없을 텐데? 어처피 static 메소드들만 모아놓았다며,
+
+"인스턴스화 방지를 위해" 추상 클래스로 만들어봣자임
+해당 클래스는 자식 클래스를 가질 수 있고, 자식 클래스는 인스턴스화 할 수 있기 때문임.
+게다가 다른 사용자가 클래스를 보고서 "아 가상 클래스니까 상속하면 되겠구나?" 라고 생각하기 쉬움.
+
+이거 private constructor 만드는 거는 너무 기본이라 넘어가려고 했슴.
+작가가 의도한 것은 public 생성자 호출에 의한 인스턴스화를 막으려는 것 같음. 
+애초에 private 생성자로 해도 팩토리 메소드를 쓰면 인스턴스화가 가능하잖슴.
+그냥 클래스 내에서 인스턴스화 해서 리턴할 수 있고...
+
+Item5. Prefer dependency Injection to hardwiring resources. <- Spring이 생각나네.
+DI와 Hardwiring 은 유명.
+hardWiring은 
+private Meat patties = new Meat();
+이렇게 박아넣거나. 하는 거임...
+예전에는 DI가 좋다 좋다. hardwiring은 안좋다. 이유는 모듈성이 안좋아진다, 코드 보수하기 힘들다~ 같은 것들이 있었다.
+
+
+가장 간단한 DI는 주입할 자원을 생성자에게 넘기는 형태이다.
+또다른 형태는 자원 factory를 넘기는 형태이다.
+일일히 DI 만드는 작업은 작은 프로젝트에선 유효할 지도 모르지만, 프로젝트 규모가 커지면 clutter를 일으킬 수 있당.
+->Spring이 대두된 이유.
+
+Item6. Avoid Creting unnecessary objects
+
+생성자는 반드시 호출될 때 객체를 찍어내줘야 하지만, factory method는 그럴 필요 없다.
+
+대표적인 안티패턴이 for문 돌면서. String.matches를 계속 호출하는 패턴. 이유 : 매번 String.matches를 호춣 할 때마다. Regex를 컴파일하여 Pattern 인스턴스를 만들기 때문이다.
+-> 매번 다른 Regex를 사용하지 않아도 된다면, 인스턴스를 미리 만들어놓고 재사용하자.
+알아채기 어려운 인스턴스 재사용 패턴 == Adapters, Views 패턴. Adapter란 backing object를 delegate하는 (대변하는) 객체로, 대체 interface를 외부에 노출한다.
+Adapter의 경우 backing object외에는 인스턴스를 가질 필요가 없다. 
+
+예를 들어 Java에서 Map에 keySet 메소드를 호출하면 Set 객체를 반환. 만약 같은 Map에 다시 호출한다면, 같은 Set 인스턴스 반환
+
+...Adapter란? 
+=> 특정 Object의 인터페이스를 변경하여 다른 오브젝트에서 사용할 수 있도록 한다.
+
+또다른 경우 : AutoBoxing.
+-> primitive types 와 boxed(wrapped) primited types를 혼용 사용. "Scala 처럼"
+-> 언제나 prefer primitive to boxed primitvie, and watch out unintentional autoboxing.
+
+주의점 : 모든 객체의 생성이 expensive 한 것은 아니다. 오해는 금물!
+오히려 작고, 생성자에서 별 로직을 수행하지 않는 객체의 생성은 cheap!
+따라서 객체가 아주 크고 무겁지 않은 이상. object pool을 운영하는 것은 잘못된 설계이다.
+
+Item50. 과 연계.
+
+
+Item7. Eliminate obsolete object reference
+만약 C/C++와 달리 "알아서" "자동으로" 메모리 관리해주는 Java에서는 메모리에 대해서 아예 신경 꺼도 된다고 생각한다면. 오산이다.
+Obsolete refernece란 다시는 dereference 되지 않는 레퍼런스이다.
+
+// Can you spot the "memory leak"?
+public class Stack {
+    private Object[] elements;
+    private int size = 0;
+    private static final int DEFAULT_INITIAL_CAPACITY = 16;
+    public Stack() {
+        elements = new Object[DEFAULT_INITIAL_CAPACITY];
+    }
+    public void push(Object e) {
+        ensureCapacity();
+        elements[size++] = e;
+    }
+    public Object pop() {
+        if (size == 0)
+            throw new EmptyStackException();
+        //pop인데 그냥 size만 감소. 즉 어레이 크기는 그대로이면서. reference도 그냥 들고 있으므로 -> GC 돌지 않는다.
+        //적어도 elements[size] == null 해주자.
+        return elements[--size];
+    }
+    /**
+    * Ensure space for at least one more element, roughly
+    * doubling the capacity each time the array needs to grow.
+    */
+    private void ensureCapacity() {
+        if (elements.length == size)
+            elements = Arrays.copyOf(elements, 2 * size + 1);
+    }
+}
+이런 정보를 알게된 프로그래머가 아무 생각없이 하게 되는 일은 == Nulling out every object at the end of its usage이다.
+기억하자. Nulling out은 예외 케이스여야 한다.
+제일 좋은 방법은 reference를 담은 변수가 scope에서 벗어나면서 해제되도록 디자인하는 것이다. RAII -> Item 57. 참조
+
+만약 class가 자체적으로 메모리를 먹고 있다면. 작성시 항상 메모리 leak에 주의하여야 한다.
+
+또 다른 주의점 -> Cache! -> 캐시에 처박아 두고 잊어버리기 쉬움.
+
+WeakHashMap. What is it?
+Java Reference에는 4가지가 존재한다.
+1. Strong Reference 
+    default type/class of Refernece Objects
+    MyClass obj = new MyClass()에서 obj이다
+    이 reference는 직접 null을 대입하지 않는 이상 해제되지 않는다.
+
+2. Weak Reference   
+    Strong reference가 아니고. 사용시 명시적으로 특정화 되어야 한다.
+    WeakHashMap에서 entry 객체에 해당
+    만약 오로지 weak refernece만 가진 객체를 만나면 GC대상으로 마크됨.
+    Java.lang.ref.WeakReference를 사용하여 직접 만들 수 있음.
+
+    2-1. Soft Reference
+        Java.lang.ref.SoftReference
+        오로지 남은 메모리 공간이 없을때만 GC된다.
+        -> memory-sensitive 캐시를 만들때 사용될 수 있다. (메모리가 꽉 차기 전까지 제거되지 않으므로)
+
+    2-2. Phantom Reference
+        Java.lang.ref.PhantomReference
+        a phantom reference is used for pre-mortem clean-up actions before the GC removes the object. 
+        
+        번외 : Java Finalizer의 문제점 : 
+            It is mainly used as a replacement for the finalize method, which is unreliable and can slow down the application as the JVM uses a separate thread pool for finalization and an object with a finalize method consumes more resources than a normal object. 
+
+            Another problem with the finalize method is that it allows the objects to be resurrected during finalization, and for this reason, at least two GC cycles need to be run as the first GC makes the object finalizable and the second GC reclaims the object if it is not resurrected. And between these two GC cycles, the finalizer thread must have been run to actually reclaim the object.
+
+            If the finalizer thread does not run, more than two numbers of GC can run, and this means the object will wait to be reclaimed for a long time although it is not used anymore, which can cause an out-of-memory exception even though most the objects in heap are garbage.
+            
+So. WeakHashMap. What is it?
+간단히 얘기해서 HashMap의 일종으로. key가 WeakReference 타입인 맵이다.
+key에 대해서 Strong refernce가 하나도 남아있지 않게 된다면. 자동적으로 map에서 제거되게 된다.(누가요? GC가 제거하는 건가요? 설마 실시간 감시하지는 않겠쬬. == GC가 제거한다고 함. 근데 String key쓰면 어떻게 되나요?)
+
+
