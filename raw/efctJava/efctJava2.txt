@@ -2,7 +2,6 @@
 Item3. 이어서
 저자에 따르면 단일 element를 가진 enum 타입이 singleton 구현하기에 최고라고 한다.
 
-
 Item4. Enforce noninstaniablity with a private constructor
 보통 Util static method를 모아놓은 클래스는 bad practice로 인식된다.(나도 그렇게 생각)
 그치만 저자에 따르면, 이러한 클래스가 쓸모 있는 경우도 있다고 한다. 
@@ -59,7 +58,6 @@ Adapter의 경우 backing object외에는 인스턴스를 가질 필요가 없�
 따라서 객체가 아주 크고 무겁지 않은 이상. object pool을 운영하는 것은 잘못된 설계이다.
 
 Item50. 과 연계.
-
 
 Item7. Eliminate obsolete object reference
 만약 C/C++와 달리 "알아서" "자동으로" 메모리 관리해주는 Java에서는 메모리에 대해서 아예 신경 꺼도 된다고 생각한다면. 오산이다.
@@ -195,7 +193,6 @@ equals contracts
     2. 타입이 같은지 알아보기 위해 instanceof 
     3. equals에서 instanceof로 체크하고 타입 캐스팅
     4. equals를 작성하고 나서, Symmetric, Transitive, Consistent 체크
-
 
 Item 11. Always override hashCode when you override equals.
 contract
