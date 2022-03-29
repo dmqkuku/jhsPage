@@ -1,0 +1,20 @@
+https://okky.kr/article/33596
+
+현상: 
+
+class MyClass {
+    private String pIdx;
+
+    public String getPIdx(){
+        return this.pIdx;
+    }
+    public void setPIdx(String pIdx){
+        this.pIdx = pIdx;
+    }
+}
+
+이 MyClass를 jsp에 던질 때. Model.addAttribute("MyClass", myClass);
+하고
+jsp에서 
+${myClass.pIdx}하면 안되고
+${myClass.PIdx}하면 된다.

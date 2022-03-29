@@ -1,8 +1,278 @@
 ---
-title: "2023-03-24 개발 일기 Day 2"
+title: "2023-03-28 개발 일기 Day 2"
 categories: [Diary]
-tags: [Diary, Java, Effective Java]
-excerpt: "일기 1일차 : Effective Java Chap2. Item 3, 4, 5, 6"
+tags: [Diary, Java, Effective Java, WeakHashMap, Java Reference, Singleton]
+excerpt: "일기 2일차 : Effective Java Chap2. Item 3, 4, 5, 6, 7, 8, 9, 10 "
 classess: wide
 use_math: true
 ---
+
+## Chap2. Creating and Destroying Objects
+
+
+이 장에서는 언제(when) 어떻게(how) 객체를 만들고, 
+           언제(when) 어떻게(how) 객체를 만들지 말아야 하며,
+           어떻게 적절한 시기에 파괴할 수 있는지. 서술하였다.
+
+
+### Item3. Consider static Factory Methos instead of constructors
+
+싱글톤 구현 방법에는
+1. private constructor를 호출하는 public staic final class 변수.
+```java
+    class Burger {
+        public static final Burger instance = new Burger();
+        private Burger(){
+
+        }
+    }
+```
+> AccesibleObject.setAccesible로 접근 가능 여부를 바꿀 수 있기 때문에 무결한 방법은 아니다.
+<div class="notice--primary" markdown="1">
+**생각하기** 왜 이런 식으로 접근 가능 여부를 바꿀 수 있도록 설계해 놓았는지 이해가 잘 가지 않는다. TODO 리스트에 추가해 놓자.
+</div>
+
+2. private constructor를 호출하는 private static final 변수를 반환하는 getInstance 메서드.
+```java
+    class Burger {
+        private static final Burger instance = new Burger();
+        private Burger (){}
+        public static Burger getInstance(){
+            return instance;
+        }
+    }
+```
+> 이 방법이 1번보다 유연하다.
+> 메서드 참조인 Burger::getInstance가 supplier로 쓰일 수 있따.
+
+3. Lazy Initialization (책의 Item3에는 기재되어 있지 않다.)
+```java
+    class Burger {
+        private static Burger INSTANCE = null;
+        private Burger() {}
+        public static Burger getInstance(){
+            if(INSTANCE == null){
+                INSTANCE = new Burger();
+            }
+            return INSTANCE;
+        }
+    }
+```
+이 방법은 thread-safe하지 않다.
+> 가정해보자. 동시에 두 쓰레드가 getInstance 호출한다면, INSTANCE == null 체크가 둘다 통과하고, 각각 다른 Burger 인스턴스를 가지게 될 것이다.
+> 이 외에도 상기 방법들에는 문제점이 있다. 참조 : https://dzone.com/articles/java-singletons-using-enum 
+
+4. 단일 Element를 가진 enum 타입.
+```java
+    enum EBurger {
+        //이게 끝이라고????
+        INSTANCE;
+    }
+```
+이 코드는 암시적으로 다음과 같이 해석된다.
+```java
+    enum EBurger {
+        INSTANCE;
+        private EBurger(){}
+    }
+```
+> Java Enum의 경우. 암시적으로 private 생성자가 존재한다. enum은 컴파일 시간 상수이며(complie time constant) 동시에 각 enum type의 인스턴스이기도 하다. 그리고, 각 enum type이 "최초로" referenced 될 때 생성된다.!!
+
+## Itme4. Enforce noninstantiablity with a private constructor.
+
+보통 Util Static method를 모아놓은 클래스는 나쁜 디자인이다.
+
+그래도 혹시 이런 클래스를 사용할 것이라면... final을 붙여서 상속을 막도록 하고, 인스턴스를 못 만들도록 방지하도록 하자.
+
+간혹. 인스턴스를 못 만들게 하기 위해, abstract 클래스로 만들려고 할 수 있는데. 잘못 생각한 것이다.
+abstract 클래스는 자식 클래스를 가질 수 있고, 자식 클래스가 인스턴스를 만들 수 있기 때문이다.
+다른 사용자가 클래스 코드를 보고 "가상 클래스이니까 상속하면 되겠지" 라고 생각하기도 쉽다.
+
+## Item5. Prefer Dependency Injection to hardwiring resources
+
+hardwiring은 
+```java
+    class Burger {
+        private Meat patties = new Meat();
+    }
+```
+이렇게 박아 넣는 경우. 모듈성이 떨어지고, 코드 보수하기 점점 힘들어 진다.
+
+가장 간단한 DI는 주입할 자원을 생성자에 넘기는 형태
+```java
+    class Burger {
+        private Meat patties = null;
+        public Burger (Meat patties) {
+            this.patties = patties;
+        }
+    }
+```
+또 다른 형태는 자원 factory를 넘기는 형태이다.
+```java
+    class Burger {
+        private Meat patties = null;
+        public Burger (Supplier<? extends Meat> meatFactory) {
+            this.patties = meatFactory();
+        }
+    }
+```
+일일히 DI 구현하여 작업하는 경우. 작은 프로젝트면 몰라도, 프로젝트 규모가 커질 수록 이곳 저곳에서 clutter가 터질 수 있따.
+
+## Item6. Avoid creating unnecessary objects
+
+다음 코드는 안티 패턴이다.
+```java
+    for(int idx = 0; idx < strLen ; idx++){
+        if(str.matches("some Regex")){
+            break;
+        }
+    }
+```
+String.matches는 호출 할 때마다 regex를 컴파일한다. 매 loop마다 동일한 regex 컴파일이 이루어 지고 있는 것.
+인스턴스를 미리 만들어 두고 재사용 하면 된다. 
+
+보다 알아채기 어려운 경우도 존재한다.
+고것이 바로 Adapters. Views. 이다.
+
+
+Adapters란?
+특정 Object의 인터페이스를 변경하여 다른 오브젝트에서 사용할 수 있게 한다.
+<div class="notice--primary" markdown="1">
+**알아보기** Adapters 패턴이란?
+</div>
+
+
+## Item7. Eliminate Obsolete object reference
+만약 C/C++와 달리 "알아서" "자동으로" 메모리 관리해주는 Java에서는 메모리에 대해서 아예 신경 꺼도 된다고 생각한다면. 오산이다.
+Obsolete refernece란 다시는 dereference 되지 않는 레퍼런스이다.
+
+한 번 memory leak를 찾아보자
+```java
+public class Stack {
+    private Object[] elements;
+    private int size = 0;
+    private static final int DEFAULT_INITIAL_CAPACITY = 16;
+    public Stack() {
+        elements = new Object[DEFAULT_INITIAL_CAPACITY];
+    }
+    public void push(Object e) {
+        ensureCapacity();
+        elements[size++] = e;
+    }
+    public Object pop() {
+        if (size == 0)
+            throw new EmptyStackException();
+        return elements[--size];
+    }
+    /**
+    * Ensure space for at least one more element, roughly
+    * doubling the capacity each time the array needs to grow.
+    */
+    private void ensureCapacity() {
+        if (elements.length == size)
+            elements = Arrays.copyOf(elements, 2 * size + 1);
+    }
+}
+```
+pop() 메소드 부분에서 pop을 할 때마다 memory leak이 발생하게 될 것이다. 
+pop 호출시 size 변수만 감소할 뿐, array에 잡혀있는 reference는 그대로 남아. GC의 대상이 되지 않는다.
+따라서 class가 자체적으로 메모리를 먹는 경우, 작성하면서 항상 memory leak에 주의하여야 한다.
+
+> 이제 모든 오브젝트를 사용 종료시 Nulling out 해야 한다고 생각할 수 있는데. 이 역시 오산이다.
+> Nulling out은 예외 케이스여야 하며
+> reference를 담은 변수가 scope를 벗어나면서 자동적으로 해제되도록 디자인하는 것이 best!
+
+<div class="notice--primary" markdown="1">
+**알아보기** Nulling out이 예외 케이스여야 하는 이유는?
+</div>
+<div class="notice--primary" markdown="1">
+**알아보기** WeakHashMap이란?
+자바 refernece의 종류 
+1. Strong reference : default type/class of Reference Object. 
+    ```java
+        MyClass obj = new MyClass();
+    ```
+    에서 obj변수가 Strong reference이다. 
+    이 reference는 직접 null을 대입하지 않는 이상 해제되지 않는다.
+2. Weak Reference : Strong reference가 아닌, 사용시 weak로 특정화된 참조. (직점 SoftRef 클래스 호출해서 만들어야 한다는 뜻)
+    만약 오로지 Weak 참조만 가진 객체가 있다면, GC 대상이 된다.
+3. Soft Reference : Weak Reference 처럼 Gc 대상이 되는 레퍼런스긴 하다.
+    오로지 메모리가 더 이상 없을 경우에만 GC 대상이 된다.
+
+
+    Sun JRE에서 -Client와 -Server는 다르게 Soft Reference를 다룬다.
+    -Client는 최대한 Soft Reference를 GC하면서, heap size를 늘리지 않으려고 하고, 
+    -Server는 가능한 한 heap size를 늘리려고 한다.
+> 원문:  
+> The Sun JRE does treat SoftReferences differently from WeakReferences. We attempt to hold on to object referenced by a SoftReference if there isn't pressure on the available memory. One detail: the policy for the "-client" and "-server" JRE's are different: the -client JRE tries to keep your footprint small by preferring to clear SoftReferences rather than expand the heap, whereas the -server JRE tries to keep your performance high by preferring to expand the heap (if possible) rather than clear SoftReferences. One size does not fit all.
+
+
+그래서 WeakHashMap이 뭔가?
+간단히. HashMap의 일종, Key가 WeakReference 타입인 맵.
+Key와 연관된 Strong Reference가 하나도 남아있지 않게 되는 시점에서, GC가 map에서 제거하게 된다.
+</div>
+
+세번째 자주있는 memory leaks의 원인은 listener와 callback들이다.
+API를 구현했는데. 클라이언트가 CB를 등록하기만 하고. 해제하지 않는다면 계속 쌓일 수 있다.
+따라서 CB에 대한 WeakReference만 저장하도록 한다.
+
+<div class="notice--primary" markdown="1">
+**생각하기** "CB에 대한 WeakReference만 저장하도록 한다."?? CB를 저장한다는 소리인가? Java쪽에서 EventListener나 콜백을 사용해본적이 없어서 잘 모르겠다. 사용해보자.
+</div>
+
+## Item8. Avoid Finalizers and Cleaners
+
+Java9부터는 Cleaner로 대체됬는데. 조금 개선되었지만, 여전히 느리고, 필요없고, 위험하다.
+만약 리소스를 manual 해제하고 싶으면 try-with-resource나. try-finally문을 사용하도록 하자.
+
+<div class="notice--primary" markdown="1">
+**알아보기** 한번 써보고 무슨 꼴이 나는 지 알아보자.
+</div>
+
+## Item9. Prefer try-with-resource to try-finally.
+여러 resource를 동시에 사용할 때 try-finally는 지저분하다.
+
+```java
+static void copy(String src, String dst) throws IOException {
+    InputStream in = new FileInputStream(src);
+    try {
+        OutputStream out = new FileOutputStream(dst);
+        try {
+            byte[] buf = new byte[BUFFER_SIZE];
+            int n;
+            while ((n = in.read(buf)) >= 0)
+            out.write(buf, 0, n);
+        } finally {
+            out.close();
+        }
+    } finally {
+        in.close();
+    }
+}
+```
+게다가.
+read에서 exception 발생하고, 두번째 exception이 close에서 나온다면, 두번째 exception이 첫 exception을 덮어 버린다.
+<div class="notice--primary" markdown="1">
+**알아보기** 이 현상의 이유는???
+</div>
+
+
+# Chap3. Methods Common to All Objects
+Object class내부의 nonfinal 메소드들은 명시적으로 General Methods라고 봐야 한다.(언제든지 오버라이드될수 있기 때문)
+여기서는 어떻게 nonfinal Object method들을 오버라이드 할 것인지 다룬다..
+
+## Item 10. Objey the general Contract when overriding Equals
+
+equals contracts
+1. Reflexive : 어떠한 Non-Null 참조값 X에 대해서. X.equals(X) 는 항상 true이다
+2. Symmetric : 어떠한 Non-Null 참조값 X, Y에 대해서 X.equals(Y)는 다음 상황에서만 True이다. Y.equals(X)가 True인 상황에서만
+3. Transitive : 어떠한 Non-Null 참조값 X, Y, Z에 대해서 X.equals(Y)가 True이고, Y.equals(Z)가 true이면, X.equals(Z)도 true이다.
+4. Consistent : 어떠한 Non-Null 참조값 X, Y에 대해서 X.equals(Y)를 복수 회 호출할 경우에도 결과는 동일해야 한다.
+5. 어떠한 Non-Null 참조값 X에 대해서, X.equals(NULL)은 항상 false이다.
+
+
+결론적으로
+1. 참조가 같은지 알아보기 위해 == 사용
+2. 타입이 같은지 알아보기 위해 instanceof 
+3. equals에서 instanceof로 체크하고 타입 캐스팅
+4. equals를 작성하고 나서, Symmetric, Transitive, Consistent 체크
