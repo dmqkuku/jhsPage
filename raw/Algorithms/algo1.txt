@@ -1,0 +1,16 @@
+Grokking Algorithms.
+
+Binary Search
+
+1000 -> 500 -> 250 -> 125 -> 62 -> 31 -> 15 -> 7 -> 3 -> 1 : 9 
+1og base 2 1000 is 9.966 
+Binary Search는 log2n 걸린다.
+Simple Search는 n 걸린다. 
+
+Selection Sort
+만약 Ascendig order라면 -> 리스트를 흩으면서 가장 낮은 수를 찾아서 하나씩 맨앞부터 쌓는다.
+O(n * n) 만큼의 시간이 걸린다.
+
+Recursion
+-> 항상 언제 재귀를 끝낼 지 생각해야 한다.
+-> 따라서 모든 재귀 함수는 두 파트로 이루어짐. Base Case와 Recursive Case.
