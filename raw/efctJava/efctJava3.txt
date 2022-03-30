@@ -1,0 +1,233 @@
+Chap4. Classes and Interfaces
+
+Item15. Minimize the Accessiblity of Classes and Members.
+
+잘 설계된 클래스와 그렇지 않은 클래스를 구분하는 좋은 지표는. 캡슐화 정도이다. 
+잘 설계된 클래스는 불필요하게 정보를 외부에 노출하지 않고, 깔끔하게 필요한 API만을 외부에 노출한다.
+
+잘 모르겟으면, 무지성 private 떡칠하자.
+아주 당연한 말이라 패스. 
+만약에 "왜 private 떡칠해야 하는지 모르겠는데?"이런 생각이 들면, JavaScript를 한번 써보자. (JavaScript에서는 모든 것이 Public이고, 일부 아주 제한 적인 경우에만, (Proxy나 ES에 실험적으로 추가된 private class member와 _를 붙여 protected로 사용하는 경우 ) 접근을 제한할 수 있따...)
+써보면 아주 얼음위를 걷는 것 같은 느낌을 받을 수 밖에 없는데. 
+접근을 제한하려니 코드에 군더기가 생기고, 남의 코드를 사용하든, 나의 코드를 사용하든, 코드를 작성하는 측이든 계속 "사용자가 막 대입하고, delete할 수 있다."라는 생각을 가지고 작업하게 된다.
+어찌보면 Javascript는 모든 것이 Mutable 한 언어 디자인이라고 봐야 한다. (class문법은 나중에 추가되었으므로...)
+
+Item16. In Public Classess, Use Accessor Methods, not public fields.
+
+간단히 요약해서 멤버를 private으로 두고, setter, getter로 접근하라는 말.
+-> 완전 좋은 idea는 아닌듯
+**Thinking**
+    1. public member를 찍어서 접근하는 것과, accessor Method를 호출하는 것 중 성능/비용은 어느쪽이 나은가?
+    2. Accessor Method를 사용했다고 해서, Get과 Set이 언제든 타입이 허락하는 한 얼마든지 가능하다는 사실은 변하지 않는다. 결국 Mutablity는 오십보백보 아닌가?
+    3. 만약 Immutablity를 달성하려면, final 로 모든 변수를 만들고, Constructor에서 초기화 시키고, 읽기만 해야 한다.
+        3-1. 멤버 변수가 한 20개 있으면,,, constructor가 인자가 20개??? 띠용
+        3-2. 가정1. 모든 member가 필수값이 아닐 수 있다.  
+             가정2. 모든 member가 readonly일 필요는 없을 수 있다.
+                -> 일부 readonly member는 생성자로 초기화하고, 나머지는 getter/setter를 사용한다.
+        3-3. 만약 20개가 있고, 20개가 전부 필수값이고, 전부 readonly여야 한다면????? 어쩌지... 이런 경우는 거의 없긴 한데... readonly VO....
+            -> Constructor를 쪼갤 수도 없고... 뭔가에 싸서 넣어줄 수도 없고... 애초에 이미 immutable 한 뭔가로 데이터를 감쌀 수 있으면, VO안쓰고 그거 쓸듯...
+            -> 생각해보니까 보통 const, readonly값을 만들때. "뭔가를 싸고" "그 안의 모든 것이 자동으로 readonly, const"되려면, 언어차원에서 지원해야 하지 않을까...
+            -> Java와 비슷한 C#에서는 어떻게 그 문제를 해결했을까??? 설마 해결 못햇나..??
+
+Item17. Minimize Mutablity
+
+1. Don't provide methods that modify the object's state
+2. Ensure that the class can't be extended
+3. Make all fields Final
+4. Make all fields Private
+5. Ensure Exclusive access to any mutable Components.
+    만약. mutable object를 멤버로 가진다면. 절대 사용자가 그 객체의 참조를 얻지 못하도록 하고. 사용자가 넘긴 객체 참조로 초기화 하지 말아야 하며
+    defensive copies(Item50)을 수행하고.
+    readObject(Item 88)을 수행하라.
+
+Immutable obejct는 읽기 좋고, 작성하기 좋고, 태생적으로 thread-safe하다.
+유명한 단점 :> 값마다 객체가 따로 있어야 한다.
+
+Itme18. Favor Composition over Inheritance.
+Item19. Design and document for Inheritance or else prohibit it
+
+Inheritance는 캡슐화를 깨뜨린다.
+superClass가 바뀌어서 subClass가 깨지는 현상이 왕왕 -> fragility
+subClass가 superClass에 의존하는...
+
+Wrapper class. Decorator pattern.은 다른 클래스에 다른 클래스르 엮을 때 유용하다.
+상속하지 않고, 일종의 부품 처럼 들고 있는것
+class Fater {
+
+}
+class Son extends Father{
+
+}
+가 아니라
+
+class Car {
+    private Bolt bolt;
+}
+이런 식으로.
+
+What is Composition???
+Instead of extending an existing class, give your new class a private field that references
+an instance of the existing class. 
+이게 왜?
+아마도 깨지는 현상은 메소드 이름이나. 시그니처가 바뀌는 것이 아닌. 구현 내용이 바뀌는 문제를 이야기하는 것 같다.
+
+Constructors must not invoke overridable methods,
+The superclass constructor runs
+before the subclass constructor, so the overriding method in the subclass will get
+invoked before the subclass constructor has run
+If the overriding method
+depends on any initialization performed by the subclass constructor, the method
+will not behave as expected. 
+
+Note that it is safe to invoke private methods, final methods, and static
+methods, none of which are overridable, from a constructor
+
+The best solution to this problem is to prohibit subclassing in classes that
+are not designed and documented to be safely subclassed.
+
+You can eliminate a class’s self-use of overridable methods mechanically,
+without changing its behavior. Move the body of each overridable method to a
+private “helper method” and have each overridable method invoke its private
+helper method. Then replace each self-use of an overridable method with a direct
+invocation of the overridable method’s private helper method.
+
+Item 20. Prefer Interfaces to Abstract Classess.
+
+A major difference is
+that to implement the type defined by an abstract class, a class must be a
+subclass of the abstract class. Because Java permits only single inheritance, this
+restriction on abstract classes severely constrains their use as type definitions.
+Any class that defines all the required methods and obeys the general contract is
+permitted to implement an interface, regardless of where the class resides in the
+class hierarchy.
+
+Interfaces are ideal for defining mixins.
+
+Template Method pattern <- Spring...
+You can, however, combine the advantages of interfaces and abstract classes
+by providing an abstract skeletal implementation class to go with an interface.
+The interface defines the type, perhaps providing some default methods, while
+the skeletal implementation class implements the remaining non-primitive
+interface methods atop the primitive interface methods. Extending a skeletal
+implementation takes most of the work out of implementing an interface. This is
+the Template Method pattern 
+
+// Concrete implementation built atop skeletal implementation
+static List<Integer> intArrayAsList(int[] a) {
+    Objects.requireNonNull(a);
+    // The diamond operator is only legal here in Java 9 and later
+    // If you're using an earlier release, specify <Integer>
+    return new AbstractList<>() {
+    @Override 
+    public Integer get(int i) {
+        return a[i]; // Autoboxing (Item 6)
+    }
+    @Override 
+    public Integer set(int i, Integer val) {
+        int oldVal = a[i];
+        a[i] = val; // Auto-unboxing
+        return oldVal; // Autoboxing
+    }
+    @Override 
+    public int size() {
+        return a.length;
+        }
+    };
+}
+-> 일종의 Adapter로 int array가 Integer List 인스턴스로 ...
+익명 클래스 사용함.
+많은 boxing/unboxing -> 성능이 영...
+
+simulated multiple inheritance???
+
+how to write skeletal implementation?
+
+Writing a skeletal implementation is a relatively simple, if somewhat tedious,
+process. First, study the interface and decide which methods are the primitives in
+terms of which the others can be implemented. These primitives will be the
+abstract methods in your skeletal implementation. Next, provide default methods
+in the interface for all of the methods that can be implemented directly atop the
+primitives, but recall that you may not provide default methods for Object
+methods such as equals and hashCode. If the primitives and default methods
+cover the interface, you’re done, and have no need for a skeletal implementation
+class. Otherwise, write a class declared to implement the interface, with
+implementations of all of the remaining interface methods. The class may
+contain any nonpublic fields ands methods appropriate to the task.
+
+// Skeletal implementation class
+public abstract class AbstractMapEntry<K,V> implements Map.Entry<K,V> {
+// Entries in a modifiable map must override this method
+    @Override 
+    public V setValue(V value) {
+        throw new UnsupportedOperationException();
+    }
+// Implements the general contract of Map.Entry.equals
+    @Override 
+    public boolean equals(Object o) {
+        if (o == this)
+            return true;
+        if (!(o instanceof Map.Entry))
+            return false;
+        Map.Entry<?,?> e = (Map.Entry) o;
+        return Objects.equals(e.getKey(), getKey()) && Objects.equals(e.getValue(), getValue());
+    }
+// Implements the general contract of Map.Entry.hashCode
+    @Override 
+    public int hashCode() {
+        return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
+    }
+    @Override 
+    public String toString() {
+    return getKey() + "=" + getValue();
+    }
+}
+
+good documentation is absolutely essential in a skeletal implementation,
+
+A minor variant on the skeletal implementation is the simple implementation,
+exemplified by AbstractMap.SimpleEntry. A simple implementation is
+like a skeletal implementation in that it implements an interface and is designed
+for inheritance, but it differs in that it isn’t abstract: it is the simplest possible
+working implementation. You can use it as it stands or subclass it as
+circumstances warrant
+
+Item21. Design Interfaces for posterity(후손을 위해 디자인하라.)
+
+This is the best general-purpose implementation one could possibly write for
+the removeIf method, but sadly, it fails on some real-world Collection
+implementations. For example, consider
+org.apache.commons.collections4.-
+collection.SynchronizedCollection. This class, from the Apache
+Commons library, is similar to the one returned by the static factory
+Collections.-synchronizedCollection in java.util. The
+Apache version additionally provides the ability to use a client-supplied object
+for locking, in place of the collection. In other words, it is a wrapper class (Item
+18), all of whose methods synchronize on a locking object before delegating to
+the wrapped collection.
+The Apache SynchronizedCollection class is still being actively
+maintained, but as of this writing, it does not override the removeIf method. If
+this class is used in conjunction with Java 8, it will therefore inherit the default
+implementation of removeIf, which does not, indeed cannot, maintain the
+class’s fundamental promise: to automatically synchronize around each method
+invocation. The default implementation knows nothing about synchronization
+and has no access to the field that contains the locking object. If a client calls the
+removeIf method on a SynchronizedCollection instance in the
+presence of concurrent modification of the collection by another thread, a
+ConcurrentModificationException or other unspecified behavior
+may result.
+
+
+In the presence of default methods, existing implementations of an
+interface may compile without error or warning but fail at runtime. While
+not terribly common, this problem is not an isolated incident either. A handful of
+the methods added to the collections interfaces in Java 8 are known to be
+susceptible, and a handful of existing implementations are known to be affected.
+
+**Using default methods to add new methods to existing interfaces should be
+avoided unless the need is critical,
+
+
+Item 22. Use Interfaces only to Define Types.
+
+
+**싱글톤을 멀티쓰레드 안전하게 쓰는 법.
