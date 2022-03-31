@@ -1,0 +1,140 @@
+---
+title: "2023-03-30 개발 일기 Day 3"
+categories: [Diary]
+tags: [Diary, Java, Effective Java, WeakHashMap, Java Reference, Singleton]
+excerpt: "일기 3일차 : Effective Java Chap4. Item 15"
+classess: wide
+use_math: true
+---
+
+## Chap4. Classes and Interfaces
+
+### Item 15. Minimize the accessiblity of classess and members.
+
+잘 설계된 클래스와 그렇지 않은 클래스를 구분하는 좋은 지표는, "데이터를 잘 은닉하고 있는 정도"이다.
+잘 설계된 클래스는 불필요하게 정보를 외부에 노출하지 않고, 깔끔하게 필요한 API만을 외부에 노출한다.
+
+<div class="notice--primary" markdown="1">
+**주인장의 말**
+잘 모르겠다. 생각하기 싫다 싶으면, 무지성으로 private을 찍어 바르도록 하자.
+
+
+만약에 "왜 캡슐화가 중요한지 이해하지 못하겠다"고 생각이 들 수 있다. 본인도 처음 객체지향을 배우면서 캡슐화가 중요하다고 그러셔서 그렇구나 그랬지, 직접 몸으로 체감하지는 못하였다.
+
+
+> Java쓰다가 Javascript(약간 old한 스타일로)쓰고, 다시 Java쓰면 절실히 체감할 수 있다.
+> 여기서 약간 old한 스타일이란. 객체 리터럴로 떡칠하는 스타일을 말하는 것이다.
+
+
+> Javascript에서는 캡슐화를 이룩할 수단이 세가지 정도 된다.
+> 1. 즉시 실행 함수(IIFE)와 클로져를 이용한 구현.
+> 2. 객체를 Proxy로 감싸서 구현
+> 3. class문법의 protected/private 사용.
+
+
+> 잘 생각해보면 Javascript에서 객체 리터를을 사용하기보다 클래스를 사용하는 것이 휠씬 단단한 코드를 만들 수 있다.
+
+</div>
+
+### Item 16. In public Classess, Use Accessor Methods, not public fields.
+
+멤버를 private으로 작성하고, accessorMethods(Getter, Setter와 같은 메소드)로 접근하라는 주장.
+
+<div class="notice--primary" markdown="1">
+**생각하기**
+고려해 보아야 할 점.
+1. public member을 직접 찍어서 접근하는 것과, accessor method를 호출하는 것 중 성능/비용은 어느 쪽이 더 나은가?
+2. accessor method를 사용했다고 하여도, 값을 쓰는 행위, 값을 바꾸는 행위가 언제든지 가능하다는 사실(Mutability)는 변하지 않는다.
+3. Immutablity를 달성한 객체 === final로 모든 변수를 지정하고, Constructor에서 초기화 시키는 형태. (final 은 readonly로 봐야 한다.)
+    <div class="notice" markdown="1">
+    **생각하기 depth2**
+
+
+    3-1. 멤버 변수가 한 20개 있으면... 생성자의 파라미터가 20개???
+
+
+    3-2. 가정해보자. 모든 member가 필수값이 아니고, 모든 member가 readonly일 필요가 없다면.
+         일부 readonly여야 하는 member는 final 지정하고, 생성자로 초기화하고, 나머지는 Getter/Setter로 초기화.
+        
+    </div>
+    <div class="notice--info" markdown="1">
+    **생각하기 depth3**
+
+
+    만약. 20개 변수가 전부 필수값이고, 전부 readonly여야 한다면...
+
+
+    -> 생성자를 쪼갤 수 있을까? 부분 초기화... 부분 read... 초기화 안한 부분은 사용 불가...
+
+
+    -> 아니면 넣을 때 뭔가에 싸서 넣어준다. 
+        -> 뭔가? 뭔가가 뭔데. mutable wrap/ immutable wrap. 
+
+    후자의 경우 immutable wrap이 가능한 시점에서 . 고민이 무의미하므로 스킵.
+
+    전자의 경우... 흠. 받은 객체를 풀어서 대입해준다? 
+    </div>
+    <div class="notice--warning" markdown="1">
+    자바와 유사한 C#에서는 이 문제를 어떻게 다룰까?
+    </div>
+</div>
+
+### Item17. Minimize Mutability
+
+1. Don't provide methods that modify the object's state
+2. Ensure that the class can't be extended
+3. Make all fields Final
+4. Make all fields Private
+5. Ensure Exclusive access to any mutable Components.
+
+
+> 만약 mutable object를 멤버로 가지는 경우. 절대 사용자가 그 객체의 참조를 얻지 못하도록 하고, 초기화 할 때에도 사용자가 넘긴 참조로 초기화 해서는 안된다.
+
+
+> defensive copy를 고려하고,
+<div class="notice" markdown="1">
+**what is Defensive Copy?** 
+생성자를 통해 초기화 할 때. 파라미터가 객체라면. 새로운 객체로 복사해주는 방법이다.
+만약 생성자에서 유효성 검증을 진행하고 있다면. 검증이전에 복사가 수행되어야 한다.
+
+
+이유1. 만약 객체를 MyObject에 그대로 넣어줄 경우. 외부 코드에서 그 객체를 수정하면, 쥐도새도 모르게 MyObject에 반영된다.
+
+
+이유2. 생성자를 통해 유효성 검사를 진행 하는 경우도 생성자를 호출하고 바로 객체를 변경하는 방법으로 우회할 수 있다.(진짜? 실험해봐야지.) 이를 TOCTOU공격(Time of Check/ Time of use 공격)이라고 한다.
+</div>
+> readObject를 고려하라.
+<div class="notice" markdown="1">
+**What is ReadObject?**
+
+</div>
+
+> 이런거 다 필요없이. Immutable Object하나면 아무 걱정 필요없다. 게다가 immutable object는 태생적으로 thread-safe하다. 읽기만 할 수 있으니까..
+
+
+Itme18. Favor Composition over Inheritance
+Item19. Design and Document for Inheritance or else prohibit it.
+
+
+Inheritance는 캡슐화를 깨뜨린다.
+SuperClass의 구현이 바뀌어서 SubClass가 깨지는 현상이 왕왕 발생하고 이를 fragility라고 부른다.
+
+Composition은 간단히 이야기해서 상속하지 않고, 일종의 부품처럼 들고 있는 것이다.
+```java
+class Father{
+
+}
+class Son extends Father{
+
+}
+```
+
+```java
+class Car {
+    private Bolt bolt;
+}
+```
+
+**what is Composition?**
+Instead of extending an existing class, give your new class a private field that references
+an instance of the existing class. 
