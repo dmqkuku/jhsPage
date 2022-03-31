@@ -96,3 +96,13 @@ BeanPostProccessor.
 -->> 이 두개는 beanPostProcces다음에 실행.
 실행 순서는 문서 맨 위 스프링api 문서의 BeanFactory 항목 찾아볼 것.  
 
+BeanFactory가 자기 안에 등록된 BeanPostProccessor를 찾아서 일반적인 Bean들에게  BeanPostProccessor안의 로직을 적용함.
+
+그냥 실행시킬때
+주입받아 버리거나
+applciationContext로 꺼내서 열어보장~
+
+---------------------------------------------------------------------------------------------------------------------
+
+@Component와 컴포넌트 스캔...
+@ComponentScan -> 3.1버전부터.
