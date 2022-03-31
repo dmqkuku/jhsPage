@@ -1,0 +1,98 @@
+BeanFactory
+스프링 IOC의 최상위
+빈 설정 소스로부터 빈 정의를 읽어들여 구성하고 제공. 기본적으로 singleton scope으로 생성된다. (bean annotation이나 설정 외에 따로 설정이 없다면.)
+그렇다면 싱글톤이 아닌 경우도 존재 : 프로토타입. 
+프로토 타입: 매번 다른 객체가 사용됨.
+https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/BeanFactory.html
+
+Bean 이란 스프링 IOC 컨테이너가 관리하는 객체.
+!= JavaBean
+
+//하나의 BeanScope에서 하나의 Bean.
+
+프로토타입에 비하여. 싱글톤은 런타임시 성능 최적화에 유리하다.
+라이프 사이클 인터페이스 지원.. -> 예제. @PostConstruct
+
+장점 1. 스코프
+장점 2. 의존성 관리
+장점 3. 라이프 사이클 인터페이스 
+
+//assertThat?
+//https://jwkim96.tistory.com/168 assertj vs junit
+
+
+## application Context
+
+//https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/ApplicationContext.html
+
+BeanFactory의 구현체.
+
+//@Component
+-> @Service
+-> @Repository
+
+DI는 자동으로 되지 않고.
+@Autowired
+
+혹은
+
+@Inject(다른 의존성이 필요하당.)
+
+Annotation 기반 == 2.5 부터
+
+Java Configuration... 
+
+@ComponentScan(basePackageClass = DummyConfig.class) -> DummyConfig가 있는 곳부터 스캔~
+DummyConfig
+
+@AutoWired...
+required true가 기본값으로. 못찾을경우 구동 실패
+** 생성자에서 autowire 실패하여 구동 실패와 달리 setter에 autowire할 경우. 인스턴스 자체는 만들 수 있다.
+만약 이 DI가 필수가 아니라면, required=false 명시.
+
+생성자 (스프링 4.3 부터 생략 가능???)
+셋터
+필드
+
+1. 해당 타입의 빈이 없을 경우
+2. 해당 타입의 빈이 한개일 경우
+3. 해당 타입의 빈이 여러개일 경우 -> 기본적으로 실패!
+    3-1. 빈 이름으로 시도
+        3-1-1. 같은 이름 빈 있으면 해당 빈 사용
+        3-1-2. 같은 이름 못 찾으면 실패
+
+Action:
+Consider marking one of the beans as @Primary, updating the consumer to accept multiple beans, or using @Qualifier to identify the bean that should be consumed
+
+같은 타입 빈이 여럿일 경우
+@Primary -> 추가적으로 @Primary 적힌 빈을 넣어줌. -> **@Primary가 여럿이면?
+해당 타입 빈 모두 주입받기
+example
+```java
+    @Autowired
+    List<Bean> beans;
+```
+@Qualifer(빈 이름으로 주입)
+
+
+...Autowired는 타입보고, 이름도 본다.
+예를들어 주입받을 빈이 
+class MyBean이면
+
+@Autowired
+Bean myBean; 이렇게
+
+->>>>> 안좋은 방법!!!! ** 왜?
+[동작원리]
+
+라이프 사이클 인터페이스 중 
+BeanPostProccessor.
+-> Bean 인스턴스 만든 후(instanciation). bean의 초기화(initialization) 라이프 사이클. 하기 전에 수행하는 
+예:
+-->>
+@PostConsturct
+혹은
+아주 오래된 인터페이스 : InitializingBean
+-->> 이 두개는 beanPostProcces다음에 실행.
+실행 순서는 문서 맨 위 스프링api 문서의 BeanFactory 항목 찾아볼 것.  
+

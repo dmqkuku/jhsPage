@@ -5,6 +5,7 @@ tags: [Diary, Java, Effective Java, WeakHashMap, Java Reference, Singleton]
 excerpt: "일기 2일차 : Effective Java Chap2. Item 3, 4, 5, 6, 7, 8, 9, 10 "
 classess: wide
 use_math: true
+
 ---
 
 ## Chap2. Creating and Destroying Objects

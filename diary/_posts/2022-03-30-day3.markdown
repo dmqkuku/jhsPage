@@ -5,6 +5,7 @@ tags: [Diary, Java, Effective Java, WeakHashMap, Java Reference, Singleton]
 excerpt: "일기 3일차 : Effective Java Chap4. Item 15"
 classess: wide
 use_math: true
+
 ---
 
 ## Chap4. Classes and Interfaces
