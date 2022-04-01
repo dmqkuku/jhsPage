@@ -1,0 +1,301 @@
+Item 22. Use Interfaces only to define Types.
+
+Interface는 타입을 유추할 수 있도록 디자인 되어야 한다.
+즉 X 인터페이스를 구현한 클래스는 사용자로 하여금 X를 구현했다는 사실 만으로, 기능을 유추할 수 있어야 한다.
+
+이런 조건을 실패하는 대표적 케이스가. constant interface로 불리는 부류로
+```java
+public interface failure {
+    static final int some_num = 1231231231;
+}
+```
+이런 식으로 static final 필드로만 구성된 경우이다. -> 아주 안좋은 패턴이다.
+이런 인터페이스를 구현하는 것은. class의 외부로 노출된 api로 구현 상세내용이 노출되도록 한다?????
+It is of no consequence to the users of a class that the class implements a
+constant interface. In fact, it may even confuse them
+
+
+이런 인터페이스를 구현한 클래스의 namespace는 이런 상수들로 오염된다.
+
+사실 자바 구현체에도 이런 상수 인터페이스가 존재하나. 후방 호환성때문에 아직 존재하는 것이다.
+
+만약만약 상수를 export하고 싶다면 다른 선택이 존재한다.
+만약 그 클래스나 인터페이스에 강하게 묶인 상수라면 그냥 박아넣고.
+enum으로 만들거나
+instance화가 불가능한 utility class에 박아 넣어라. 당연히 상속 안되는 클래스에 박아넣자~
+
+자바에서 _는 아무 작용도 하지 않지만. 일종의 코딩 컨벤션으로 쓰기엔 좋다.
+
+만약에~ 상수를 자주 꺼내쓰는 곳이 있다면~ import static 문을 고려해보자
+**import static이 뭐임**
+
+
+Item 23. Prefer Class hierarchy to tagged classes.
+
+난 한번도 본적이 없지만, Tagged class라는 기법이 있는데 아주 smelly하다고 한다.
+```java
+class Figure{
+    enum Shape{RECTANGLE, CIRCLE};
+
+    //tag
+    fianl Shape shape;
+
+    //method
+    double area() {
+        switch(shape){
+            case RECTANGLE:
+                //do something
+            case CIRCLE:
+                //do something
+        }
+    }
+}
+```
+
+단점1. boilerplate(쓸모없이 중복되는 코드)가 많아진다. (enum 선언, tag field 선언, switch 문까지)
+단점2. 본래 제대로 된 구현이면 다른 클래스일 코드가 한 클래스에 뭉개져 있으니. 읽기도 불편.
+단점3. 메모리 footprint도 증가. 인스턴스에 쓸모없는 필드들이 첨가되니까(Circle일때는 가로/세로 필요 없는 등)
+** what is memory footprint
+** in java how to see memory footprint?
+단점4. 이 tagged class에서는 더욱 코드를 추가하지 않는 한(생성자에서 초기화 하도록. 상관없는 필드라도!!!) final 붙일 수 없당
+단점5. 만약 flavor를 추가하고 싶으면. 소스 코드를 직접 수정해야 하며?
+** 소스 코드 추가하지 않고 class에 flavor 추가 가능? reflection? proxy?
+단점6. flavor 추가할 때마다. switch 문이 늘어나야 한다.
+
+-> 이거 굳이 나는 taggged class 본적도 없고, 쓰지도 않을 거라서 . 더이상 안봐도 될듯
+** tagged Class를 사용해야만 하는 경우가 존재하는가?
+
+Item24. Favor staic member classes over nonstatic
+
+nested class는 반드시 enclosing class에게 봉사하기 위해.(serve) 존재하여야만 한다.
+만약 다른 context에서 사용할 필요가 있다면. top-level class가 되어야 한다.
+** top-level class-> 자바 파일과 이름이 같은 클래스?
+** 같은 자바 파일에 여러 클래스 선언 가능
+```java
+MyJava.java
+class MyJava{
+
+}
+
+class MyJava2{
+
+}
+
+```
+이 경우에는?
+
+
+ nesetd Class에는 
+ static member class
+ nonstatic member class
+ anonymous class
+ local class
+
+ 여기서 static member class를 제외하고는 inner class라고 불린다.(All but the first kind are known as inner classes.)
+
+ 1. static member class 는 가장 간단한 타입.
+    평범한 클래스가 다른 클래스 내부에 정의된 것처럼. (단 스태택임). 감싸는 클래스가 private이어도 멤버에 접근 가능하다.
+    대표적으로 public helper class가 그 활용처이다.
+    예를 들어
+    ```java
+        class Operation{
+            enum Calculator {MINUS, PLUS,...};
+        }
+    ```
+    사실 nonstaic member class와 static member class의 문법적 차이는 static이 붙은 것 뿐이다.
+    각 nonstatic member class의 인스턴스는 암시적으로 enclosing instance에 연관되어 있다.
+    따라서 nonstatic member class의 인스턴스 메서드 내부에서 enclosing instance 의 메서드를 작동시키거나, 참조를 얻을 수 있다.
+    qualifed this를 이용해서
+    ** What is Qualified this.
+
+    만약 nested class 인스턴스가 enclosing instance와 별개로 존재하려면 static nested 여야 한다.?????
+    ** static class도 인스턴스 만들수 있나연?
+
+    nonstatic member class 인스턴스와 enclosing instance의 관계는 member class가 생성되면서 이루어지고, 그후로 바뀔수 없당.
+
+    보통 이런 관계는 enclosing method에서 내부의 class constructor를 호출하면서 정립된다.
+
+    사실 enclosingInstance.newMemberClass(args);를 이용해서 생성할 수도 있다.
+ 
+    nonstatic member class는 Adapter 패턴에서 유용하게 쓰인다.
+
+    -> outer class의 인스턴스가 다른 무관계한 클래스의 인스턴스처럼 적용될 수 있도록...
+
+    ```java
+        public class MySet<E> {
+
+            public Iterator<E> iterator(){
+                return new MyIterator();
+            }
+
+            private class MyIterator extends Iterator<E>{
+
+            }
+        }
+    ```
+
+    그리고 nonstatic member class instance reference는 숨겨진 outer class instance refernce를 가진다.
+    -> 시간과 공간을 잡아먹는다.
+    -> 심각한 케이스 : member class instance가 잡아두는 reference때문에 GC가 제대로 동작하지 않을 수 잇따.
+
+    enclosing class의 component를 표현하는 목적으로 private static member class가 사용될 수 있당
+
+    2. anonymous class는 이름이 없당. 즉 멤버가 아니당. 
+        선언과 초기화/생성을 따로 하는 일반 클래스와 달리
+        익명 클래스는 선언과 동시에 생성한다.
+        어느 문맥에서든 익명 클래스는 valid.
+        그리고 enclosing instance를 오로지 nonstaic context에 있을 때만 가진다.(non static context라...)
+        주의할 점은. static context에 선언되어도. 다른 static member에 접근이 불가하다. 오로지 static final 에만 접근 가능하다.
+
+        한계 : 선언 시점 외에는 생성/초기화 불가. 클래스 명이 없으니 instanceof등 클래스 명이 필요한 어떠한 것도 불가.(Reflection도?)
+               동시에 복수 인터페이스를 구현하거나. 인터페이스 구현과 상속을 같이 하는 것도 불가능하다.
+    
+    3. 로컬 클래스. 가장 적게 사용됨.
+        로컬 변수가 선언될 수 있는 곳 어디에나 선언될 수 있땅.그리고 그 부분에 선언되었을 로컬 변수와 같은 스코프를 따라간다.
+        그리고 enclosing instance를 오로지 nonstaic context에 있을 때만 가진다.(non static context라...)
+        static member 포함 불가.
+        이름 있음.
+
+Item25. Limit source files to a single top-level classs
+
+사실 java complier는 한 파일에 multiple top-level class를 허용한다.
+이 점에서 얻는 이득은 단 한개도 없고, 단점만 잔뜩이다....
+예를 들어. 
+```java
+public class Main{
+    public static void Main(String[] args){
+        System.out.println(Utensil.NAME + Dessert.NAME);
+    }
+}
+```
+
+```java 
+//Utensil.java
+class Utensil {
+    static final String NAME = "Pan";
+}
+class Dessert {
+    static final String NAME = "Cake";
+}
+```
+```java
+//Dessert.java
+class Utensil {
+    static final String NAME = "Pan2";
+}
+class Dessert {
+    static final String NAME = "Cake2";
+}
+```
+
+만약에 다행히 javac Main.java Dessert.java로 컴파일 명령을 내리면 -> fail 띄워준다.
+
+우선 Main.java를 먼저 보고. Utensil 참조를 발견하여 Utensil 클래스를 찾는데... 파일이 두개? 정의가 두개? -> fail
+
+만약에 javac Main.java or javac Main.java Utensil.java 이렇게 컴파일하면... 같은 fail
+** 자바 컴파일 순서...
+** 스프링 컴파일 순서...
+
+만약 만약 javac Dessert.java Main.java 라고 명령하면. Pan2Cake2  라고 출력함... 
+
+결론 컴파일러에게 넘겨진 순서에 따라 다르게 이게 결과가 나온다.
+
+이런 형태를 다른 파일로 쪼개고 정리하는 작업은 아주 쉽다.
+만약 그래도 알수 없는 이유로 이런 형태를 쓰고 싶다면. static member class로 사용하도록!
+
+
+
+Chap5. Generics
+
+Java5.부터 Generic이 추가됨.
+컴파일러가 컴파일 타임에 타입을 넣어줌.
+
+Item 26. Don't use Raw Types.
+
+Raw Type이란 Generic type의 이름이 타입 파라미터 없이 사용된 경우
+List<E>대신
+List
+**아니 이런 걸 왜 허용하나요? 후방 호환성: Generic 없던 시절.
+**Raw Types는 작동시 모든 type 파라미터 부분이 지워진 것 처럼 동작함.
+
+//Generic 등장 전에 collection declaration이 있었음
+```java
+private final Collection stamps = ...;
+```
+만약 stamps.add(new Coin()); 하면? warning 띄우긴 하는데.
+
+꺼낼때 ClassCastException 내뱉음.
+
+에러에 관하여 최선의 경우는. 비용이 들더라도. 발생 즉시. 이상적으로는 컴파일 시간에 발견하는 것이다.
+
+최악은 런 도중에. 진짜 원인인 코드와 동떨어진 곳에서 에러가 발생하는 것이다.
+
+만약 제네릭을 제대로 사용하고. 이와 같은 케이스가 떨어지면, 즉시 컴파일할때 에러가 떨어지고,
+제대로 넣을 경우 나올때 암시적으로 casting 해준다.???????엥??????? 그 타입이 떼려박히는 게 아니네?
+
+정리: raw type을 사용할 경우. generic의 모든 이점(안정성과 표현력)을 잃는다.
+
+**comment 너무 후방 호환성 챙기는 것도 안좋은데... C++처럼...
+
+근데 List<Object>는?
+적어도 Generic 시스템의 혜택을 받으니까~
+** 내 생각 Object쓰는거는 안좋은듯. 진짜 필요한 곳이 아니면 쓰지 말아야 함.
+** List<Object>를 사용하는 사람이 첫 요소가 무슨 객체인지. 두 번째 요소가 어떤 객체인지 어캐암??? -> 모름! 지가 던지고 지가 받는거 아니면!!
+
+generic을 쓰고 싶은뎅. 실제 타입이 뭔지. 모르거나 상관 안하면~ unbound wildcard type을 쓰자! List<?> == List of Some Type. -> 모든 List 가능.
+Collection<?>안에 아무 객체나 넣을 수 없당.
+
+
+이것도 싫으면~ Generic Methods나 bounded Wildcard Type 쓰세요
+
+    Item 30. Favor Generic Methods
+        * return type과 modifier 사이에 올것.
+
+        Item 28. Prefer lists to arrays. [Generic is implemented by erasure]
+
+            Array : Covariant. => Sub 가 Super의 서브타입이면. Sub[]는 Super[]의 서브타입임.
+            Generic : Invariant. => Type1. Type2.에 대해서 List<Type1>과 List<Type2>는 Type1과 Type2가 무슨 관계든 상관없이 무관계
+
+            -> Java에서는 이런 특징인거고, 그래서 List가 조금 더 나은것(Array에 결점이 있다. Java에서는.)
+
+            ```Java
+                Object[] objArray = new Long[1];
+                objArray[0] = "I Don't fit in!";
+                //컴파일 가능. 실행시 에러!
+            ```
+
+            Array : reified. array는 런타임에 요소의 타입을 알고 강제한다. -> 엥?
+            Generic : Type Erasure에 의해 구현됨. 무슨 말이냐. 컴파일 시간에 타입 체크하고. 런타임 중에는 타입 정보가 지워짐!!!!
+                    -> 레거시 코드와의 호환성 때문에 이렇게 구현됨.
+
+            Generic Type Array, 는 불가능!
+            Array는 런타임에 타입 정보를 들고 있어야 하는데. type ersure가 지워버리면~ 무조건 ClassCastException터진다.
+            즉 List<String>의 런타임 타입은 List이당.
+
+            E, List<E>, List<String> 같은 거는 nonreifiable 타입이당. -> 런타임에 정보를 컴파일 타임보다 더 적게 들고 있는 경우(이 경우에는 타입 정보.)
+
+            오로지 reifiable한 경우는 unbounded wildcard type이다.
+
+            문제점 : 제네릭 메소드가 제네릭 타입 array 리턴 불가능 
+                    가변인수를 제네릭 메서드에서 받을 때 요상한 에러가 발생. -> @SafeVarags
+
+                    **그니까 후방 호환성때문에 type erasure로 구현 -> 제네릭은 런타임에 타입이 지워짐 -> 따라서 기존 array와 충돌함 ㄷㄷ. 레전드.
+
+                    **이 사람도 array가 보다 정밀하고, 성능상 우위에 있다는 점을 부정하지는 않음.
+                    **보다 type safety하고, interoperability.
+                    **세상에 어떤 언어가 문법상 충돌 때문에 이렇게 쓰나
+
+        Item31. use bounded wildcards to increase API flexibility [bounded wildcard types]
+
+            Iterable<? extends E>. Iterable of some subtype of E.
+            이때 extends를 오해하면 안된다. "subtype"은 모든 타입은 그 자신의 subtype이다. extends하지 않더라도.
+
+
+        Item10 -> Liskov 치환 원칙.
+
+
+            Item 29. Favor Generic Types [SubType]
+
+                위에서 언급했듯이. generic type array는 불가능하지만
+                흑마법 가능
+                    1. elements = (E[]) new Object[CAPACITY];
