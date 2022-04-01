@@ -174,4 +174,108 @@ Request. Session. Websocket.
 Environment
 =======================================================================================================================
 
+프로파일 - 일종의 환경 
+ex) 테스트 환경에서는 ~~ 빈을 쓰겟따. 프로덕션 환경에서는 ~~ 빈을 쓰겟따.
+
+Environment env = ctx.getEnvironment();
+Environment.getActiveProfile();
+Environment.getDefaultProfile();
+
+bean 위에 @Profile("profile name")
+이렇게.
+예를들어 @Profile("test")
+
+IDE에서 Active Profile을 설정해야 한다.
+
+@Profile("!prod")
+도 가능. prod가 아닐때...
+& 와 | 도 가능하다.
+
+--------------------------------------------------------------------------------------------------------------------------
+
+Property...
+
+계층형 접근임...
+
+다양한 방법으로 접근할 수 있는 설정값.
+Environment의 또다른 역할. 프로퍼티 값 가져오기
+
+Environment env = new Environment();
+env.getProperty();
+
+프로퍼티 우선순위
+    Servlet Config 매개변수
+    Servlet Context 매개변수
+    JNDI
+    JVM 시스템 프로퍼티 
+    JVM 시스템 환경변수
+
+============================================================================================================================
+Message Source
+============================================================================================================================
+
+국제화 i8n을 제공하는 인터페이스...
+
+@Autowired
+MessageSource messageSource;
+
+messageSource.getMessage();
+
+기본적으로 messageSource라는 빈이 message라는 번들을 읽고 있당
+
+// 스프링이 기본적으로 쓰는 설정들을 우리가 맘대로 뜯어고칠 수 있당.
+
+```java
+@Bean
+public MessageSource messageSource(){
+    var messageSource = new ReloadableResourceBundleMessageSource(); -> 빌드를 해야 적용됨.
+    messageSource.setBaseName();
+    messageSource.setDefaultEncoding();
+    .
+    .
+    .
+}
+```
+
+================================================================================================================================
+이벤트 프로그래밍...
+================================================================================================================================
+
+이벤트 클래스는 빈으로 등록될 필요 없다.
+```java
+class MyEvent extends ApplicationEvent{
+    public MyEvent(){
+        super();
+    }
+    .
+    .
+    .
+}
+```
+
+Event handler는 빈으로 등록되어야 한다.
+
+4.2 이전에는
+implements ApplicationListener<MyEvent>
+
+4.2 이후에는
+implements 필요없구
+handler 는 빈 등록 필요.
+메서드 위에 @EventListener 이렇게 달아주면 된다.
+
+같은 이벤트 처리하는 핸들러가 두개 있으면. 둘다 순차적으로 실행. 순서는? 모른다.
+@Order(Ordered.HIGHEST_PRECEDENCE + 2) 이런것도 가능...
+
+비동기적 실행-> @Async
+-> 단 @Async 붙인다고 해서 무조건 비동기가 아니고. @EnableAsync 해야 한다. 
+
+ContextRefreshEvent.
+ContextStartedEvent.
+ContextStoppedEvent.
+ContextClosedEvent.
+RequestHandledEvent.
+
+====================================================================================================================================
+Resource Loader
+====================================================================================================================================
 
