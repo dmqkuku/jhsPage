@@ -279,3 +279,60 @@ RequestHandledEvent.
 Resource Loader
 ====================================================================================================================================
 
+리소스를 읽어오는 인터페이스. 
+
+ApplicationContext extends ResourceLoader
+-> fs 에서 읽기
+-> 클래스패스에서 읽기
+-> URL
+-> 상대/절대 경로
+
+resourceLoader.getResource(문자열);
+
+====================================================================================================================================
+Resource 추상화
+====================================================================================================================================
+
+구글 쥬스?
+
+org.springframework.core.io.Resource
+
+java.net.URL을 추상화 한 것.
+스프링 내부에서 많이 사용함.
+
+추상화 이유:    URL은 클래스 패스 기반으로 가져오는 기능 부재
+               상대 경로 읽는 기능 부재.
+               편의 메서드가 부족.
+
+FileSystemXmlApplicationContext 
+
+ClassPathResource
+FileSystemResource
+URLResource
+ServletContextResource
+
+추천 :  ApplicationContext 타입에 상관없이 리소스 타입을 강제하려면. java.net.URL 접두어 중 하나를 사용할 수 있다.(classpath:, file: ...)
+
+스프링 부트 내장 톰캣에는 context path가 지정되어 있지 않음. 
+
+
+=======================================================================================================================================
+Validation 추상화
+=======================================================================================================================================
+
+ http://beanValidation.org
+
+ beanValidation == Java ee 표준 스펙 중 하나.
+
+implements Validator
+
+ support. -> 들어오는 메서드가 검증 가능한 클래스인지 검증하는 메서드
+    SomeClass.class.equals(clazz);
+
+ validate. -> 실제 검증하는 메서드.
+
+ 스프링에서 BeanPropertBindingResult를 자동으로 만들어서 넘겨줌...
+
+ 
+
+ 
