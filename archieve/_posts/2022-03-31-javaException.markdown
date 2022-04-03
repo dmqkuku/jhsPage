@@ -5,7 +5,7 @@ tags: [archieve, Java, Exception]
 excerpt: "Java Exception"
 classess: wide
 slug: "Exception1"
-published: false
+published: true
 ---
 
 **주의! Exception을 사용하는 것이 올바르냐는 논쟁이 존재함.**
@@ -93,3 +93,44 @@ Exception을 사용하지 마라고 하는 분들은 이경우 어떻게 대처�
 > 어거지로라도 돌리기?
 </div>
 
+
+Exception이 발생하는 경우는 크개 두 카테고리로 나뉜다.
+
+
+1-1. checked Exception을 던지는 method를 사용하는 경우.
+
+
+1-2. 에러를 내부 구현에서 명시적으로 throw 하는 경우
+
+
+2-1. 프로그래밍 에러. 0으로 나누기. 배열을 다루다 out of boundary 
+
+
+2-2. JVM이나 Runtime Library에서...
+
+
+이 4가지 중에서. "1-"에 해당하는 경우. 다른 사용자를 위해, 이 메서드를 사용하면 Exception이 던져질 것이라고 알려주어야 하고. 이때 사용되는 것이 throws.
+
+
+결론적으로 모든 메서드는 내부에서 발생하는 Exception을 어떠한 방식으로든 처리하여야 한다.
+그리고 이 처리 방법에는 "다시 던지는 방법"과 "내부에서 catch하는 방법" 두가지가 존재한다.
+
+
+**주의**
+메서드를 오버라이드 할 경우. subclass에서는 수퍼 클래스의 메서드가 던지는 checked exception보다 general한 exception을 던질 수 없다.
+특히 오버라이드 할 메서드가 exception을 던지지 않을 경우. 그를 오버라이드한 서브 클래스의 메서드는 exception을 던질 수 없다.
+
+
+
+
+
+
+<div class="notice" markdown="1">
+**C#은 Exception이 한 종류.**
+**Exception이 캐치되지 않고, 끝까지 올라올 경우. JVM이 책임지고 프로그램 종료.**
+**Java는 임베디드 기기에 탑재되려고 만들어진 언어...**
+**C같은 언어에서는 Exception이 존재하지 않는다.**
+**웹 서버는 프로그램(서버)가 실행되는 동안. 문제가 발생했을 때. 대처할 사람이 없을 가능성이 크다. 실제로 주말이든 밤이든 이유는 충분. 겪어봄...**
+**0으로 나누는 연산 따위를 요즘 시스템에서 수행할 경우. CPU에서 인터럽트/시그널 발생. -> OS에서 캐치하여 프로그램 종료...**
+**JVM Exception의 안전성은 OS에서 대신 해주고 있다.**
+</div>

@@ -5,7 +5,7 @@ tags: [archieve, Java, Reflection, OOP]
 excerpt: "Doesn't Java Reflection break OOP(Data Encapsulation)"
 classess: wide
 slug: "Reflection1"
-published: false
+published: true
 ---
 
 참고 : <a href="/jhsPage/diary/2022/03/30/">2022-03-30 개발 일기 Day3</a>
@@ -100,6 +100,9 @@ getConstructor 메서드를 이용해 constructor를 가져오고. newInstance�
 **Unchecked Exception / Checked Exception**
 1. Checked Exception 의 경우. 컴파일러가 경고해 주는 exception이다.
 2. 그러나, NullPointer/ Bounds Error 과 같은 경우는 UncheckedException. 즉 컴파일 시점에 아는 것이 불가능한 exception이다.
+
+
+참고 : <a href="/jhsPage/archieve/2022/03/31/exception1">2022-03-31 Java Exception</a>
 </div>
 <hr/>
 <hr/>
@@ -113,8 +116,15 @@ class Capsule {
 를 꺼내서 읽는 것에 그치면 모르겠지만. 
 
 ```java
-
-
+Capsule capsule = new Capsule();
+Capsule capsule2 = new Capsule();
+//모든 Capsule클래스의 secretInfo 필드가 접근 가능하도록 변경됨.
+capsule.getClass().getDeclaredFields("secretInfo").setAccesible(true); 
+capsule.secretInfo = ...;
+capsule2.secretInto = ...;
 ```
+그러면~ 스프링 내부에 private field를 요렇게 접근해서 바꿀 수 있을까?
+
+> 가능하다고 생각한다. 실험은 스프링 프레임워크 내부에 테스트 해볼 만한 private 필드를 찾으면 수행하도록 하겠다.
 
 
