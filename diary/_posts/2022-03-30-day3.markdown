@@ -2,10 +2,10 @@
 title: "2023-03-30 개발 일기 Day 3"
 categories: [Diary]
 tags: [Diary, Java, Effective Java, WeakHashMap, Java Reference, Singleton]
-excerpt: "일기 3일차 : Effective Java Chap4. Item 15"
+excerpt: "일기 3일차 : Effective Java Chap4. Item 15~"
 classess: wide
 use_math: true
-
+published: false
 ---
 
 ## Chap4. Classes and Interfaces

@@ -2,7 +2,7 @@
 title: "2023-03-28 개발 일기 Day 2"
 categories: [Diary]
 tags: [Diary, Java, Effective Java, WeakHashMap, Java Reference, Singleton]
-excerpt: "일기 2일차 : Effective Java Chap2. Item 3, 4, 5, 6, 7, 8, 9, 10 "
+excerpt: "일기 2일차 : Effective Java Chap2. Item 3~"
 classess: wide
 use_math: true
 

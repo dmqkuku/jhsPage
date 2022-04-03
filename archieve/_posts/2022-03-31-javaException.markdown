@@ -5,6 +5,7 @@ tags: [archieve, Java, Exception]
 excerpt: "Java Exception"
 classess: wide
 slug: "Exception1"
+published: false
 ---
 
 **주의! Exception을 사용하는 것이 올바르냐는 논쟁이 존재함.**

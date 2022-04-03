@@ -5,6 +5,7 @@ tags: [archieve, Java, Reflection, OOP]
 excerpt: "Doesn't Java Reflection break OOP(Data Encapsulation)"
 classess: wide
 slug: "Reflection1"
+published: false
 ---
 
 참고 : <a href="/jhsPage/diary/2022/03/30/">2022-03-30 개발 일기 Day3</a>
@@ -110,5 +111,10 @@ class Capsule {
 }
 ```
 를 꺼내서 읽는 것에 그치면 모르겠지만. 
+
+```java
+
+
+```
 
 
