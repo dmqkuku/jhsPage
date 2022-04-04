@@ -119,18 +119,52 @@ Exception이 발생하는 경우는 크개 두 카테고리로 나뉜다.
 **주의**
 메서드를 오버라이드 할 경우. subclass에서는 수퍼 클래스의 메서드가 던지는 checked exception보다 general한 exception을 던질 수 없다.
 특히 오버라이드 할 메서드가 exception을 던지지 않을 경우. 그를 오버라이드한 서브 클래스의 메서드는 exception을 던질 수 없다.
+즉 Exception을 던지지 않는 메서드를 오버라이드 하였을 경우에 Exception이 발생할 경우. 내부에서 무조건 catch 해주어야 한다.
 
 
+### Catch
+
+try 블록에서 exception터지면. 
+1. 나머지 try 블록의 내용 스킵
+2. catch 블록으로 넘어가서 코드 실행.
+try 블록을 지나면서 exception이 발생하지 않으면. catch 블록 무시
+
+만약에 catch 에서 잡는 exception과 던져지는 exception이 맞지 않으면. catch 무시하고. 바로 method에서 exception 던져지면서 method exit된다.
+
+**무지성으로 catch(Exception ex)?**
+
+내가 어떻게 다룰지 모르는 Exception은 던지고, 다룰지 아는 Exception은 catch!
+
+#### Rethrowing and Chaining Exception.
+
+catch 블록에서 다시 exception을 던질 수 있다.
+이 방식은 주로. Exception 타입을 바꾸려고 사용한다.
+
+보통 
+```java
+try{
+    //access the database
+    //My~는 임의로 붙인 이름 당연히 실무에서 이따위로 쓰면 안된다.
+} catch(SQLException ex){
+    throw new MySystemException("databaseError :" + ex.getMessage() );
+}
+```
+이보다 좋은 방법은 다음과 같다.
+```java
+try{
+    //access the database
+} catch(SQLException ex){
+    var myEx = new MySystemException("databaseError");
+    myEx.initCause(ex);
+    throw myEx
+}
+```
+두 번째 방식은 catch하는 측에서
+```java
+Throwable original = caughtException.getCause();
+```
+이렇게 꺼낼 수 있다.
 
 
+### Finally && try-with-resources
 
-
-<div class="notice" markdown="1">
-**C#은 Exception이 한 종류.**
-**Exception이 캐치되지 않고, 끝까지 올라올 경우. JVM이 책임지고 프로그램 종료.**
-**Java는 임베디드 기기에 탑재되려고 만들어진 언어...**
-**C같은 언어에서는 Exception이 존재하지 않는다.**
-**웹 서버는 프로그램(서버)가 실행되는 동안. 문제가 발생했을 때. 대처할 사람이 없을 가능성이 크다. 실제로 주말이든 밤이든 이유는 충분. 겪어봄...**
-**0으로 나누는 연산 따위를 요즘 시스템에서 수행할 경우. CPU에서 인터럽트/시그널 발생. -> OS에서 캐치하여 프로그램 종료...**
-**JVM Exception의 안전성은 OS에서 대신 해주고 있다.**
-</div>

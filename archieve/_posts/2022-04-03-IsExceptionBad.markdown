@@ -5,7 +5,7 @@ tags: [archieve, Java, Exception]
 excerpt: "Is Exception Bad"
 classess: wide
 slug: "Exception2"
-published: true
+published: false
 ---
 
 <div class="notice" markdown="1">

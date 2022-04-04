@@ -5,7 +5,7 @@ tags: [archieve, Java, Reflection, OOP]
 excerpt: "Doesn't Java Reflection break OOP(Data Encapsulation)"
 classess: wide
 slug: "Reflection1"
-published: true
+published: false
 ---
 
 참고 : <a href="/jhsPage/diary/2022/03/30/">2022-03-30 개발 일기 Day3</a>
