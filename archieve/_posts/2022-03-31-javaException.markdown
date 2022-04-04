@@ -168,3 +168,67 @@ Throwable original = caughtException.getCause();
 
 ### Finally && try-with-resources
 
+try 블록 안에서 local resource.(file open등)을 점유하고 있다가 exception 터질 경우. 그 resource를 해지하지 못하고 try블록을 나오게 되므로 문제가 된다.
+
+try 블록에서도 resource 해지 코드를 작성하고, catch 블록에서도 작성하는 것도 한 방법이다.
+
+finallly / try-with-resource를 사용하면 이 문제를 좀 더 elegant하게 해결 할 수 있다.
+
+finally 블록에 control flow를 바꿀 수 있는. return, throw, break, continue 하지 말것! finally 블록은 resource cleanup을 위해 존재한다.
+대표적으로, finally에 return 이 포함될 경우. 기괴한 동작을 보인다.
+```java
+public static int parseInt(String s){
+    try{
+        return Integer.parseInt(s);
+    }
+    finally{
+        return 0;
+    }
+}
+```
+다음 문에서. exception이 던져지지 않더라도. finally가 메소드 반환 전에 실행되고, finally 문에도 return 이 존재하여 try의 return을 가리게 될 것이다.
+심지어 String s = "Hello"; 이렇게 argument가 주어질 경우. 
+try에서 발생한 exception이 던져지지 않고, finally에서 return 0된다. (swallow exception)
+
+Java 7 이후로는 try-with-resource가 추가되었으며. finally보다 elegant한 해결책이다.
+
+
+## Exception사용시 팁
+
+1. Exception handling은 simple test목적으로 사용되어선 안된다. Exception은 특수 케이스에 사용하여야 한다.
+
+2. do not micromanage Exceptions. 일반적인 처리와 error handling을 분리하라!
+```java
+try{
+    n = s.pop();
+}catch(EmptyStatckException ex){
+
+}
+try{
+    out.writeIn(n);
+}catch(IOException){
+
+}
+```
+대신
+```java
+try{
+    n = s.pop();
+    out.writeIn(n);
+}catch(IOException ex){
+
+}catch(EmptyStackException ex){
+
+}
+```
+
+3. 무작정 Throwable이나 Exception. RuntimeException같은 최상위 부모 클래스들을 던지지 말것.
+
+
+4. do not squelch Exceptions!
+```java
+try{
+
+}catch(Exception ex){}
+```
+이렇게 작성하지 마라!!!.

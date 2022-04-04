@@ -5,8 +5,142 @@ tags: [archieve, Java, Exception]
 excerpt: "Is Exception Bad"
 classess: wide
 slug: "Exception2"
-published: false
+published: true
 ---
+
+
+## 논쟁에 대해 살펴보자.
+
+<hr/>
+### Exception 반대 측의 논거들
+<hr/>
+
+참고 : <a href="https://www.joelonsoftware.com/2003/10/13/13/">JOEL ON SOFTWARE. 13. Exceptions</a href>
+
+#### Exceptions. JOEL.
+
+Java든 C++든 exception을 사용하지 말아야 한다.
+
+따라서
+1. 절대 스스로 Exception을 던지지 않는다.
+2. 만약 라이브러리에서 Exception을 던질경우 내가 무조건 바로 catch 해버릴 것이다.
+
+저자는 Exception == goto. 라고 생각!
+
+<div class="notice" markdown="1">
+```java
+function doStupidThings(int a, int b, int c, int d){
+    final int dumb = 10;
+    try{
+        int x = 0;
+
+        x = dumb / a;
+        //do something...
+
+        x = dumb / b;
+        //do something...
+
+        x = dumb / c;
+        //do something...
+
+        x = dumb / d;
+        //do something...
+    }catch(ArithmeticException ex){
+        //...
+    }
+}
+```
+각 나누기 부분에서 ArithmeticException 가 발생할 수 있는데. 어디서 터져서 catch로 점프할 지 모른다.!!!
+</div>
+1. They are invisible in the source code!. 코드 블록의 어느 시점에서 점프할 지 알 수 없다.
+
+2. They create too much possible exit points. 제대로 함수를 짜기 위해서는 모든 가능한 exit path를 머리에 두어야 하는데. exception 때문에 너무 많은 exit path가 생긴다.
+
+
+저자도 error Code를 사용하면 일견 코드가 지저분해 보일 수 있다고 인정!
+
+
+그러나 Exception Magic~~ 보다는 낫다!!!
+
+
+참고 : <a href="https://medium.com/codex/the-error-of-exceptions-3aed074c40dc">The Error of Exceptions</a>
+
+<hr/>
+### Exception 찬성 측 의 논거들
+<hr/>
+참고 : <a href="https://blog.plan99.net/what-s-wrong-with-exceptions-nothing-cee2ed0616">What's wrong with exceptions? Nothing.</a>
+
+#### What's Wrong with Exceptions? Nothing.
+
+저자에 따르면. Go와 Rust를 비롯한 최신 언어들이 Exception을 지원하지 않는 것이 일종의 유행과도 같다. 이런 언어들에서 Exception을 지원하지 않는 "feature"가 일종의 selling point로 기능하는 듯 하다.
+
+저자는 Exception을 모든 언어가 가져야 한다고 주장하며 다음 논지를 펼친다.
+
+Exception의 장점!
+1. Code Seperation : Code의 주 로직과 에러 처리 로직의 분리
+
+2. Stack Trace는 언제나 도움이 된다.
+
+3. Failure Recovery. 만약에 "복구는 불가능하거나 하면 안되고, 에러가 발생하면 뻗는게 정상이얌"이러는 프로그래머는 무시하라!
+
+
+결국 이렇게 좋은 Exception을 사용하지 않는 이유는. 언어 개발자들이 C++출신이고, Exception 구현을 어려워하며, Exception 구현 자체에 낮은 가치를 두고 있기 때문이다!!
+
+
+저자도 C++에서 Exception이 worse than useless 인 것은 인정!
+
+```cpp
+SomeObj foo = new SomeObj();
+foo->loadFrom("이 위치에서 exception");
+list.push_back(foo);
+```
+이 코드는 memory leak을 일으킨다. 만약 exception을 삼키고 진행하면, foo는 해제가 되지 않기 때문에...
+```cpp
+SomeObj foo;
+foo->loadFrom("이 위치에서 exception");
+list.push_back(foo);
+```
+이 코드는 스택에 생성이고... exception 터지면 rewind 되면서 foo가 제거된다고 한다.
+
+<div class="notice--primary" markdown="1">
+근데 CPP에는 초기화 방법이 장난아니게 많다...
+
+참고 : <a href="https://www.youtube.com/watch?v=7DTlWPgX6zs&t=2706s">CppCon2018: Nicolai Josuttis "The Nightmare of initialization of C++"</a>
+</div>
+
+그러나 
+1. 객체 복사는 비싸다.
+2. 보통 객체 복사는 나름 문제가 있어서 막아둔다. 참고 : <a href="https://google.github.io/styleguide/cppguide.html#Copyable_Movable_Types">구글 스타일 가이드</a>
+
+
+또한!
+
+ErrorCode 반환시 사용자가 그냥 무시할 수 있다!
+
+에러가 발생한 경우 에러코드를 받는 측에서 바로 해결하는 것 보다. 위쪽으로 propagate시키는 게 나을 수 있다.
+
+<hr/>
+<hr/>
+
+## 정리
+
+# Judiciously!!!!!!!!
+
+참고 : <a href="http://www.hanselman.com/blog/good-exception-management-rules-of-thumb">Good Exception management Rules of Thumb</a>
+
+참고 : <a href="https://stackoverflow.com/questions/253314/conventions-for-exceptions-or-error-codes#:~:text=Error%20codes%20can%20be%20ignored,the%20error%20in%20some%20way.">Conventions for exceptions or error codes </a>
+
+Scott Hanselman 이라는 분이 정리한 팁인데. 괜찮은 듯.
+
+1. Exception은 "예외 상황"이어야 한다.  매번 발생하는 일에는 throw exception해서는 안된다.!!
+
+2. 잘 이름 지어진 함수가 이름이 나타내는 일을 하지 못하였을 경우 exception을 던지자!
+
+3. 이미 상황에 잘 맞는 exception이 존재할 경우. 쓸데없이 새로 구현하지 말것
+
+4. 만약 끔찍한 일(거래 transaction failed등)이 일어난다면, keep going할 지 진지하게 고민하라
+
+## 나의 생각 주저리주저리.
 
 <div class="notice" markdown="1">
 **C#은 Exception이 한 종류.**

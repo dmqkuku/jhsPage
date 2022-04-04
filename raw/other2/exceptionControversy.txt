@@ -1,0 +1,155 @@
+참고 : <a href="https://blog.plan99.net/what-s-wrong-with-exceptions-nothing-cee2ed0616">What's wrong with exceptions? Nothing.</a>
+
+What's wrong with Exceptions? Nothing.
+
+최근 언어들이 Exceptions를 아예 지원하지 않거나. 대충 지원하는 경우가 fashion처럼 되었다.
+
+Go나 Rust의 경우처럼 이러한 feature는 일종의 selling point처럼 기능한다.
+
+그러면서 몇몇 포럼들에서 exceptions기능은 실수이며. 새 언어들은 이 기능을 지원하면 안된다는 이야기에 종종 마주친다.
+
+저자는 새 언어들이 Exception을 구현하지 않는 이유를 두가지로 추측
+1. Exception 구현하는 게 어려워서
+2. 해당 언어 개발진들이 거대한 C++ CodeBase에서 살아왔고, 그 코드베이스에서 ban Exception했기 때문에
+
+
+Exceptions이 좋은 이유!
+
+1. Code Seperation : code의 주 로직과 에러를 처리하는 로직을 분리해낸다.
+
+2. Stack Traces : Crash Reporter는 언제나 디버그에 도움이 된다고 주장.
+
+3. Failure Recovery : 복구능력. robust... 다른 프로그래머중 몇몇은 "복구는 불가능하고, 에러가 발생하면 뻗는게 정상이얌"이렇게 얘기하는데 무시하셈 ㅇㅇ
+
+4. Prototyping : 실험할때. 에러 처리 코드를 건너띌 수 있다.
+
+
+저자는 Exception을 모든 언어가 가져야 한다고 생각.
+
+Go. Rust가 가지고 있지 않은 이유는 Exception을 구현하기 어렵고, 언어 개발자들이 Exception에 별로 가치를 두지 않기 때문이라고 생각.
+
+근본 이유는 해당 언어 개발자들이 C++출신이고.
+C++에서 exception은 useless 보다 더 안좋기 때문.
+
+우선 c++에서는 exception safe하게 코딩하기 힘들다.
+
+예를 들어
+```java
+foo.loadFrom("이 위치에서 exception");
+list.add(foo);
+```
+위 코드는 exception safe하다. (list는 변하지 않는다.)
+```java
+list.add(foo);
+foo.loadFrom("이 위치에서 exception");
+```
+위 코드는 exception safe하지 않다. (list는 변한다.)
+
+일단 위의 코드를 CPP로 직역해보자
+```cpp
+//heap에 생성
+SomeObj foo = new SomeObj();
+foo->loadFrom("이 위치에서 exception");
+list.push_back(foo);
+```
+기억하자. CPP에서는 GC가 없어서. 위 코드는 메모리 leak를 일으키게 될 것이다.(프로그램이 뻗지 않는 이상)
+<div classs="notice" markdown="1">
+```
+Class class;    //$0
+Class class = Class();  //$1
+Class class = new Class();  //$2
+```
+두 방식의 차이.
+$0는 default initialization.
+$1. 익명 Class를 direct initialization.(default) -> copy/move to a var price of type class;
+$2. 는 heap initialization
+
+뭔가 이상하다?.
+참고로 CPP에는 초기화 방법이 엄청 많다
+
+참조 : <a href="https://www.youtube.com/watch?v=7DTlWPgX6zs&t=2706s">CppCon2018: Nicolai Josuttis "The Nightmare of initialization of C++"</a>
+</div>
+```cpp 
+//스택에 SomeObj 생성.
+SomeObj foo;
+foo.loadFrom("이 위치에서 exception");
+list.push_back(foo);
+```
+와! 이제 리스트는 pointer를 저장하지 않고, exception터지면 알아서 제거된다!!!(wind back 하면서!!)
+
+여전히 있는 문제점 
+1. 객체 복사는 비싸다!
+2. 보통 객체 복사 생성은 막아둔다. 참조 : <a href="https://google.github.io/styleguide/cppguide.html#Copyable_Movable_Types">구글 스타일 가이드</a>
+
+
+=================================================================================================================================
+
+자주 지적되는 문제점!
+
+Error Code 리턴시. 그냥 무시할 수 있당. <- 근데 이건 exception도 swallow할 수 있으니까 마찬가지자나.
+
+좀더 말이 되는 이유 : 에러가 터질때 에러코드를 받는 쪽에서 바로 해결하는 것보다. 위쪽으로 propagate시키는게 나을 수도 있다.
+
+=================================================================================================================================
+
+좀 오래된 글이라고 생각할 수 있는데 exception handling을 구현한 하드웨어 자체는 1951년 UNIVAC 1에서 처음 등장하였으며.
+LISP 1.5(1958-1961) 에서 소프트웨어상에서 exception을 던질 수 있게 하였다. - 참조 위키피디아.
+
+참조 : <a href="https://www.joelonsoftware.com/2003/10/13/13/">JOEL ON SOFTWARE. 13. Exceptions</a href>
+
+Java든 C++든! Exception을 사용하지 않는다!
+
+1. 절대 스스로 Exception을 만들어서 던지지 않는다.
+2. 만약 api사용하는데 거기서 exception이 던져지면 반드시 catch!!
+ 
+나는 exception을 "goto"와 유사한 정도로 생각한다.
+> 생각해 보면 맞는 말인게
+```java
+function fnDoStupidMath(int a, int b, int c, int d){
+    final int dumb = 10;
+    try{
+        dumb / a;
+
+        //do something~
+
+        dumb / b;
+
+        //do something~
+
+        dumb / c;
+
+        //do something~
+
+        dumb / d;
+        
+        //do something~
+    }catch(~){}
+}
+```
+> 각 나누기 절에서 0으로 나누기 exception이 발생할 수 있는데. 어디서 catch로 점프할지 모른다!
+
+1. 즉 They are invisible in the source code!. 코드 블록의 어느 시점에서 터질지 모른다!
+
+2. They create too much possible exit points. 제대로 함수를 짜려면~ 모든 가능한 exit path를 머리에 두어야 한다.!!!! Exception이 있는 순간. 어디서 exit할 지 제대로 예측하기 힘들어 진다.
+
+이사람도 errorCode와 그 처리 로직이 지저분해 보일 수 있다는 것을 알지만. exception magic~~!!보다는 낫다고 주장.!!
+
+
+=======================================================================================================================================
+
+참조 : <a href="http://www.hanselman.com/blog/good-exception-management-rules-of-thumb">Good Exception management Rules of Thumb</a>
+
+괜찮은 룰인듯
+
+1. Exception은 "예외 상황"이어야 한다.  매번 발생하는 일에는 throw exception해서는 안된다.!!
+
+2. 잘 이름 지어진 함수가 이름이 나타내는 일을 하지 못하였을 경우 exception을 던지자!
+
+3. 이미 상황에 잘 맞는 exception이 존재할 경우. 쓸데없이 새로 구현하지 말것
+
+4. 만약 끔찍한 일(거래 transaction failed등)이 일어난다면, keep going할 지 진지하게 고민하라
+
+
+
+
+

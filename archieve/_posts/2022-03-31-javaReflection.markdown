@@ -5,7 +5,7 @@ tags: [archieve, Java, Reflection, OOP]
 excerpt: "Doesn't Java Reflection break OOP(Data Encapsulation)"
 classess: wide
 slug: "Reflection1"
-published: false
+published: true
 ---
 
 참고 : <a href="/jhsPage/diary/2022/03/30/">2022-03-30 개발 일기 Day3</a>
@@ -128,3 +128,75 @@ capsule2.secretInto = ...;
 > 가능하다고 생각한다. 실험은 스프링 프레임워크 내부에 테스트 해볼 만한 private 필드를 찾으면 수행하도록 하겠다.
 
 
+Core Java Volumn 1에 의하면. 
+setAccesible은 accessiblity를 바꿀 수 없을 때 exception을 던진다. accesbility 변경은 java module system이나 security manager에 의해 막힐 수 있다.
+
+Java9부터 단계적으로 JavaAPI의 모듈화가 이루어졌다. Java11에서 module화된 JDK 라이브러리 APi에 직접 접근 할 경우. Error!
+
+워낙에 Java에서 reflection을 자주 사용하므로. Java9와 Java10에서 module안의 nonpublic 요소의 접근성을 변경하면. warning만 내뱉는다.
+
+
+## Java Reflection. Encapsulation. Java 9~
+
+Java8.이후로 진행된 중대한 차이점.
+In Java 8 and before, you can call public methods on any public class you like, both directly and reflectively.
+After the Java module system arrived, these calls became subject to additional restrictions.
+참고 : <a href="https://blogs.oracle.com/javamagazine/post/a-peek-into-java-17-continuing-the-drive-to-encapsulate-the-java-runtime-internals"> 오라클 articles. A peek into Java 17</a>
+
+Java8에서 다음 코드를 컴파일 할 경우. warning!
+```java
+import sun.net.URLCanonicalizer;
+
+public class MyURLHandler extends URLCanonicalizer{
+    public boolean isSimple(String url){
+        return isSimpleHostName(url);
+    }
+}
+```
+```
+src/ch02/MyURLHandler.java:3: warning: URLCanonicalizer is internal proprietary API and may be removed in a future release
+import sun.net.URLCanonicalizer;
+               ^
+ src/ch02/MyURLHandler.java:5: warning: URLCanonicalizer is internal proprietary API and may be removed in a future release
+ public class MyURLHandler extends URLCanonicalizer {
+```
+만약 Java 11에서 컴파일 한다면?
+```
+src/ch02/MyURLHandler.java:3: error: package sun.net is not visible
+import sun.net.URLCanonicalizer;
+          ^
+  (package sun.net is declared in module java.base, which does not export it to the unnamed module)
+src/ch02/MyURLHandler.java:8: error: cannot find symbol
+        return isSimpleHostName(url);
+               ^
+  symbol:   method isSimpleHostName(String)
+  location: class MyURLHandler
+```
+Not Warning! Error!
+
+Java 9와 그 이상을 Modular JDKs라고 부름
+
+modular JDKs에서는 exported packages만 접근 가능하다.
+
+더이상! public 멤버가 모든 코드에서 접근 가능하지 않다.
+
+JDK 패키지에서, java.혹은 javax.로 시작하는 JDKs 패키지만 public API고 나머지는 internal only이다.
+
+여기서 Reflection의 setAccesible은 진짜 커다란 구멍이 된다.
+
+이에 대처하기 위해 modular JDKs에서는 module-info.class에 reflective policy를 정의할 수 있다.
+
+1. 모든 module은 기본적으로 exported인 패키지만 접근 가능하다. 이는 reflection도 포함이다.
+2. 만약 만약 reflection을 통해 exported가 아닌 패키지에도 접근 가능해야 한다고 생각하는 모듈의 경우. module-info.class에 opens를 명시하여 접근할 수 있도록 열어놓을 수 있다.
+3. 만약 특정 packages에만 열려있고 싶으면, opens ... to ... 로 지정할 수 있다.
+
+
+정리하자면
+
+java8 : 직접 접근과 reflective 접근 모두 가능 
+
+java11 : 모듈로 직접 접근 거부 가능. reflective로 접근 모두 가능.
+
+java16 : 모듈로 직접 접근 거부 가능. reflective로 접근 기본적으로 거부. cli에서 예전 동작으로 구동시키면 가능
+
+java17 : 둘 다 불가능.
