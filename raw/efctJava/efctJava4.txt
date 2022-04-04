@@ -21,7 +21,7 @@ constant interface. In fact, it may even confuse them
 
 만약만약 상수를 export하고 싶다면 다른 선택이 존재한다.
 만약 그 클래스나 인터페이스에 강하게 묶인 상수라면 그냥 박아넣고.
-enum으로 만들거나
+enum으로 만들거나 
 instance화가 불가능한 utility class에 박아 넣어라. 당연히 상속 안되는 클래스에 박아넣자~
 
 자바에서 _는 아무 작용도 하지 않지만. 일종의 코딩 컨벤션으로 쓰기엔 좋다.

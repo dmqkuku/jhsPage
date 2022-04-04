@@ -139,3 +139,84 @@ class Car {
 **what is Composition?**
 Instead of extending an existing class, give your new class a private field that references
 an instance of the existing class. 
+
+**주의**
+
+생성자는 Overridable methods를 발동시켜서는 안된다!
+super 생성자는 subclass 생성자가 실행 되기 전에 실행된다. 따라서. subclass의 overriding method는 subclass 생성자가 실행되기 전에 실행된다.
+만약에 overriding method가 subclass 생성자의 초기화 동작에 의존한다면!. 제대로 동작하지 않을 것이다.
+
+```java
+public class Super{
+    public Super(){
+        overrideMe();
+    }
+    public void overrideMe();
+}
+```
+
+```java
+public final class Sub extends Super{
+    private final Instant instant;
+    Sub(){
+        instant = Instant.now();
+    }
+    @Override
+    public void overrideMe(){
+        System.out.println(instant);
+    }
+}
+```
+
+따라서! 애초에 디자인 할때부터 상속을 염두에 둔 클래스가 아닐 경우. final 붙인다!
+
+다른 방법은 다음과 같다. overridable method의 내용물을 상속 불가능한 private으로 옮기는 것이다. 그리고 overridable method에서는 해당 private method를 호출하도록 구성한다.
+
+**Overridable method = superclass의 final이 아닌 메서드**
+
+```java
+public class Super{
+    public Super(){
+        overrideMe();
+    }
+    public void overrideMe(){
+        doSomethingPrivate();
+    }
+    private void doSomethingPrivate(){
+
+    }
+}
+```
+
+## Item 20. Prefer Interface to Abstract Classess.
+
+Abstract Class와 interface의 주된 차이점 중 하나는. abstract class가 정의하는 type을 구현하려면, abstract class의 subclass여야만 한다는 점이다. 그리고 Java는 이중 상속을 지원하지 않기 때문에!. type을 가지고 놀때 꽤 큰 제약 사항이 된다.
+
+Interface는 mixin을 만들기 아주 적합하다.
+
+추상 클래스와 인터페이스의 장점을 동시에 가지는 abstract Skeletal Implementation class를 만들 수 있다.
+
+
+
+### abstract Skeletal Implementation class.
+
+
+<div class="notice" markdown="1">
+### What is Template Method Pattern?
+
+참고 : <a href="https://yaboong.github.io/design-pattern/2018/09/27/template-method-pattern/">디자인 패턴-템플릿 메소드 패턴</a>
+
+Define the skeleton of an Algorithm in a method. deferring some steps to subclassess. Template method lets subclassess redefine certain steps of an algorithm without changing the algorithms structure.
+-- GoF Design Pattern.
+
+알고리즘의 뼈대를 메서드에 정의해 놓고. 서브 클래스에서 알고리즘의 뼈대를 유지하며 알고리즘을 재정의 하는 패턴.
+
+
+</div>
+
+
+## Item21. Design Interfaces for posterity(후손을 위해 디자인하라.)
+
+
+
+
