@@ -333,6 +333,85 @@ implements Validator
 
  스프링에서 BeanPropertBindingResult를 자동으로 만들어서 넘겨줌...
 
- 
 
- 
+========================================================================================================================================
+Data Binding 추상화
+========================================================================================================================================
+
+DataBinder.
+프로퍼티 값을 타겟 객체에 설정.
+문자열 입력값(프로퍼티)를 int,long,boolean,data,event,등등의 타입으로 변환하여 넣어주는 기능.
+
+=========================================================================================================================================
+SpEL
+=========================================================================================================================================
+
+#은 표현식 평가..
+$는 properties 가져오기...
+
+@Value("#{1 + 1 }")
+int value;
+
+@Value("#{1 eq 1}")
+boolean trueOrFalse;
+
+@Value("Hello")
+String hello;
+
+@Value("${my.data.value}")
+String myData;
+
+@Value("#{${my.data.value} eq 100}")
+boolean isHundred;
+
+
+산술 연산 가능. 
+다양한 operation이 존재하고. 필요할 때 찾아서 볼 것...
+
+
+@Value
+@ConditonalOnExpression
+
+ExpressionParser.
+StandardEvaluationContext.
+
+```java
+ExpressionParser parser = new SpelExpressionParser();
+StandardEvaluationContext context = new StandardEvaluationContext(bean);
+Expression expression = parser.parseExpression("Spel Expression");
+String value = expression.getValue(...);
+```
+
+Thymaleaf.에서도 SpEl....
+
+==================================================================================================================================
+Spring AOP.
+==================================================================================================================================
+
+Aspect.
+Advice. -> 끼어넣을 기능. 
+JoinPoint. PointCut. -> 끼어넣을 지점들이 joinPoint이고, 그 지점을 구체적으로 설정해 놓는 것이 pointcut.
+
+loadTime weaving.
+Runtime. 
+complie time.
+
+스프링은 Runtime weaving 사용. 대상 빈을 감싸는 Proxy빈을 만든다.
+
+스프링 빈에만 AOP를 적용할 수 있다.
+
+동적 프록시~.
+
+AbstractAutoProxyCreator.
+
+====================================================================================================================================
+Null-Safety.
+====================================================================================================================================
+
+@NonNull
+@Nullable
+@NonNullApi
+@NonNullFields
+
+-> Complie 시점에 최대한 Null Pointer Exception을 방지.
+
