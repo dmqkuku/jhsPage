@@ -10,3 +10,246 @@ published: false
 
 ## Item 22. Use Interfaces only to define Types.
 
+
+Interface는 타입을 잘 유추해 낼 수 있도록 설계되어야 한다.
+X 인터페이스를 구현한 클래스는 사용자로 하여금 X를 구현했다는 사실 만으로, 기능을 유추해 낼 수 있도록 해야 한다.
+
+
+이 조건을 만족하지 못하는 대표적인 안티패턴이 constant interface라고 불리는 부류이다.
+```java
+public interface failure{
+    static final int dumb = 123123123;
+}
+```
+
+상수를 저장하기 위해 interface를 사용하는 경우이다.
+클래스 내부에서 사용하는 상수는 내부 구현에 해당하고, 따라서 상수 인터페이스를 노출하는 것은 내부 구현을 클래스의 API로 누출하는 행위를 의미한다.
+
+
+자바 구현체에도 이런 상수가 존재하지만, 이는 후방 호환성때문에 지원하고 있는 것이다.
+
+
+만약 정말 상수를 export하고 싶다면. 다른 선택지를 고르자.
+1. 클래스나 인터페이스에 강하게 묶여있는 경우. 박아 넣어도 될수도 있다.
+2. enum으로 만든다.
+3. instance화와 상속이 불가능하게 구현한 utility class에 넣어라.
+
+
+상수를 자주 꺼내쓰는 곳이 있다면 import static 문을 고려해보자
+<div class="notice" markdown="1">
+**What is import static?**
+</div>
+
+
+## Item 23. Prefer class Hierachy to tagged classess.
+
+Tagged class는 다음과 같다.
+```java
+class Figure {
+    enum Shape{RECTANGLE, CIRCLE};
+    //tag
+    final Shape shape;
+
+    private final double width;
+    private final double height;
+
+    private final double radius;
+    private final double abbrPI = 3.14;
+
+    Figure(double width, double height, double radius, Shape shape){
+        this.width = width;
+        this.height = height;
+        this.radius = radius;
+        this.shape = shape;
+    }
+
+    double area() {
+        switch(this.shape){
+            case Shape.RECTANGLE:
+                return this.width * this.height;
+                //do something
+            case Shape.CIRCLE:
+                //do something
+                return this.radius * this.radius * this.abbrPI;
+        }
+    }
+}
+```
+
+Tagged class는 좋지 않은 패턴이다.
+단점1. bolierplate(쓸데없이 중복되는 코드)가 많아진다. (enum 선언, tag field 선언, switch 문)
+
+
+단점2. 본래 제대로 클래스를 나눌 구현이 하나의 클래스에 뭉개져 있다. 읽기 불편하다.
+
+
+단점3. 메모리 footprint가 증가한다. 각 인스턴스에 쓸모없는 필드들이 첨가됨.(인스턴스 태그가 Circle이면, width, height는 필요없다.)
+<div class="notice" markdown="1">
+**what is Memory FootPrint?**
+
+**In Java How to see Memory FootPrint?**
+</div>
+단점4. 위에서 보이듯이. 자기 자신의 인스턴스와 무관계한 필드를 final로 만드려면, 그들도 생성자에 포함시켜 초기화 해 주어야 한다.
+
+
+단점5. 위 클래스에 flavor을 추가할 때마다. switch문이 늘어나야 한다.
+
+
+**나는 tagged class 써본적도 없고, 쓸일도 없을듯.**
+
+## Item24. Favor static member classess over nonstatic
+
+
+원칙! nested class는 반드시 enclosing class에게 봉사하기 위해(serve) 존재하여야만 한다.
+
+
+만약 해당 기능을 다른 맥락에서 사용할 일이 존재한다면, top-level class가 되어야 한다.!!
+```java
+class HomeController {
+    class URLHelper {
+        private void urlHelper(){
+            //아주 유용해서~ 외부에서도 쓰고 싶다면!
+        }   
+    }
+}
+```
+```java
+class URLHelper{
+    public void urlHelper(){
+        //이렇게 만든다.
+    }   
+}
+```
+
+nested class에는
+1. static member class
+2. nonstatic member class
+3. anonymous class
+4. local class
+
+
+여기서 static member class을 제외한 3가지를 inner class라고 부른다.
+
+1. static member class.와 nonstatic member classs
+nonstatic member class의 인스턴스는 enclosing instance에 밀접히 연관되어 있다.
+따라서 nonstatic member classs의 인스턴스 메서드 내부에서 enclosing instance의 참조를 얻거나. 메서드를 작동시킬 수 있다.
+이 때 enclosing instance의 참조는 qualified this.로 얻을 수 있다
+```java
+class Envelope{
+    void foo(){
+        System.out.println("I am Envelope instance");
+    }
+    class InnerCls {
+        void foo(){
+            Envelope.this.foo(); // qualified this
+        }
+    }
+}
+```
+
+member classs의 인스턴스가 enclosing instance 와 별개로 존재하는 것이 static member classs.
+
+
+nonstatic member class 인스턴스와 enclosing instance의 관계는 member class가 생성되며 이루어지고 그후로 바뀔 수 없다.
+
+
+nonstatic member class instance reference는 숨겨진 outer class instance reference를 가진다.
+이는 시간과 공간을 추가로 잡아먹는다는 것을 의미한다.
+member class instance가 잡아두는 reference때문에 GC가 제대로 돌지 않을 수 있다.
+
+
+Composition을 구현하기 위해 private static member class를 사용할 수도 있다.
+
+
+2. anonymous class.
+anonymous class는 이름이 없으므로, 멤버가 아니다.
+일반 클래스는 선언과 초기화/생성을 따로 진행하지만.
+익명 클래스는 선언과 동시에 생성된다.
+어떠한 문맥이든지 익명 클래스는 valid. 만약 nonstatic context에 선언되었을 경우. enclosing instance를 참조할 수 없다.
+```java
+public class HomeController {
+    private static homeHelper(){
+        //static context!
+    }
+    private void home(){
+        //nonstatic context!
+    }
+}
+```
+**단!** static context에 선언되었다고 해서. 다른 static member에 접근이 가능하지 않고. 오로지 static final 멤버에만 접근이 가능하다.
+
+
+> 이 방식의 한계 : 선언 시점 외에는 생성 및 초기화 불가. 클래스 명이 없으니, instancof따위도 불가. 동시에 복수 인터페이스를 구현하거나. 인터페이스 구현과 상속을 같이 하는 것도 불가능하다. 
+
+
+> Reflection은?
+
+
+3. 로컬 클래스.
+로컬 변수가 선언될 수 있는 곳 어디에나 선언될 수 있고, 그 부분에 선언된 변수처럼 스코프를 따라간다.
+nonstatic context일때 enclosing instance에 대한 참조를 가질 수 있다.
+
+
+## Item 25. Limit source files to a single top-level class.
+
+
+Java compiler는 한 파일에 multiple top-level class를 허용하긴 한다.
+그래도 하지 말것!
+
+
+# Chap5. Generics
+
+Java5 부터 추가되었다.
+
+
+## Item26. Don't use Raw types.
+
+
+RawType이란 Generic Type이 들어가야 하는 곳에 타입 파라미터 없이 사용된 경우이다.
+```java
+List<String> strList = new ArrayList<String>();
+
+List dumbList = new ArrayList(); //raw types
+```
+
+<div class="notice" markdown="1">
+이따위를 허용하는 이유는 대체???
+
+
+이유 : 후방 호환성. Generic이 없던 시절에는 전부 이렇게 사용했다고 함.
+
+
+Raw type은 작동시 모든 타입이 지워진 것처럼 동작.
+</div>
+```java
+private final Collection stamps = ...;
+... 수천줄의 코드~
+stamps.add(new Coin());
+... 수천줄의 코드~
+//ClassCastException!!!!
+(Stamps)stamps.get();
+```
+
+에러를 다루는데 비용이 추가 발생하더라도. 발생 즉시에 가까운 시기에 혹은 컴파일 시간에 발견할 수 있도록 하는 것이 Best!!!
+
+
+동작 도중에, 진짜 원인인 코드와 동떨어진 곳에서 에러가 발생하는 것이 최악!
+
+
+Generic 의 이점인 안정성과 표현력을 raw types를 사용할 때 모두 상실하게 된다.
+
+<div class="notice" markdown="1">
+**List<Object>는?**
+**RawType보다는 낫다고 함. generic system의 혜택?을 받으니까**
+
+
+Object는 왠만하면 쓰지말자. 예를 들어
+```java
+List<Object> dumbList = new ArrayList<Object>();
+//누군가 이 참조를 빌려가서 객체를 두개 넣었담니다~
+//무슨 타입인지 알아맞혀 보세요~
+...
+??? obj = (???) dumbList.get(0);
+```
+</div>
+
