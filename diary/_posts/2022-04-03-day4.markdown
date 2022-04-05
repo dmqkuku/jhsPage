@@ -216,7 +216,7 @@ List dumbList = new ArrayList(); //raw types
 이따위를 허용하는 이유는 대체???
 
 
-이유 : 후방 호환성. Generic이 없던 시절에는 전부 이렇게 사용했다고 함.
+이유 : 후방 호환성. Generic이 없던 시절에는 전부 이렇게 사용했다고 함. Java가 처음 나오고 Generic이 도입될때까지 거의 10년 이니까 레거시 코드에서는 아직도....
 
 
 Raw type은 작동시 모든 타입이 지워진 것처럼 동작.
@@ -253,3 +253,50 @@ List<Object> dumbList = new ArrayList<Object>();
 ```
 </div>
 
+제네릭 타입을 쓰고 싶지만, 실제 타입 매개변수가 무었인지 신경쓰고 싶지 않다면 wildcard(?)를 사용하자.
+
+
+단!. Class Literal에는 raw types!. 
+```java
+List.class;//허용
+List<String>.class //비허용
+```
+
+그리고 런타임에 제네릭 타입 정보는 지워지므로, instanceof는 unbound wildcard 빼고는 적용할 수 없다.
+
+
+## Item27. 비검사 경고를 제거하라. <- 제거하지 말자.!!
+
+
+## Item28. Prefer lists to Arrays. [Generic is Implemented by erasure]
+
+array <= covariant. 공변. sub가 super의 서브타입. sub[]은 super[]의 서브타입
+
+generic <= invariant. 불공변. Type1과 Type2에 대해서 List<Type1>과 List<Type2>는 Type1과 Type2가 무슨 관계든 무관계!
+
+```java
+Object[] objArray = new Long[1];
+objArray[0] = "I Dont't fit in!";
+```
+
+array <= reify(실체화). 런타임에도. 자신이 담기로 한 인자의 타입을 인지하고 확인하게 된다.
+Generic <= 런타임에는 타입 정보가 소거된다. 즉 원소 타입을 컴파일 타임에만 검사하게 된다.(Type Erasure)
+
+
+이렇게 주요한 차이점이 있기 때문에. Generic type array는 Java에서 불가능!
+
+
+Array는 런타임에 타입정보를 들고 있는게 정상인데, Type erasure가 지워버리면? 무조건 classCastException이 터질 것이다.
+
+
+E, List<E>, List<String>같은 타입을 non-refiable type이라고 부른다. 런타임에 타입이 지워져서 컴파일 타임보다 정보가 더 적다.
+
+unbounded wildcard를 사용하면?
+
+<div class="notice" markdown="1">
+unbounded wildcard?!?
+</div>
+
+> 문제점
+> 제네릭 메서드가 제네릭 타입 array 리턴 불가능.
+> 가변인수를 제네릭 메서드에서 받을 때 요상한 에러 발생.
