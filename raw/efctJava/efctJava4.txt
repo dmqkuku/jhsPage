@@ -290,9 +290,7 @@ Collection<?>안에 아무 객체나 넣을 수 없당.
             Iterable<? extends E>. Iterable of some subtype of E.
             이때 extends를 오해하면 안된다. "subtype"은 모든 타입은 그 자신의 subtype이다. extends하지 않더라도.
 
-
         Item10 -> Liskov 치환 원칙.
-
 
             Item 29. Favor Generic Types [SubType]
 

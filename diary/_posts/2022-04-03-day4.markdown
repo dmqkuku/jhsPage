@@ -5,7 +5,7 @@ tags: [Diary, Java, Effective Java, WeakHashMap, Java Reference, Singleton]
 excerpt: "일기 4일차 : Effective Java Chap4. Item 22~"
 classess: wide
 use_math: true
-published: false
+published: true
 ---
 
 ## Item 22. Use Interfaces only to define Types.
