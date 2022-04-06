@@ -1,0 +1,175 @@
+Backus--Naur Form
+== Backus normal Form(BNF)
+
+CFGs를 위한 metasyntax notation
+
+<symbol> ::= __expression__
+
+<symbol> == nonterminal(variable) and the __expression_ consists of on or more sequences of either terminal or nonterminal symbols.
+::= means left must be replaced with the expression on the right
+more sequences of symbol are seperated by vertical bar "|".
+
+
+------------------------------------------------------------------
+
+Earley Parser
+
+chart Parser? that uses dynamic programming.
+Earley parsers are appealing because they can parse all CFGs?
+unlike LR parsers? and LL Parsers? -> only handle restricted class of languages
+Earley parser run in qubic case (O(n^3)) in general case. 
+n is the len of the parsed String
+quadratic time for unambigous grammars (O(n ^ 2))
+linear time for all deterministic CFGs
+it perform particularly well when the rules are written left-recursively.
+
+1. chart Parser?
+    ambiguous grammar(자연어를 포함한 매우 넓은 범위의 문법)에 적합한 parser
+    dynamic programming approach 사용. (partial hypothesized result가 chart구조에 저장되어 재사용 될 수 있음) => backtracking 과 combinational explosion 방지
+    1-1. backtracking.
+        특정 문제(Computational problems)에 대한 답을 찾고자 만들어진 general algorithms. 특히 Constraint satisfaction problems.
+        차례로 증감하며 solution에 대한 candiate를 만들고 답을 정하면 candiate를 유기.
+        대표적으로 Eight Queen Puzzle이 존재.
+        1-1-1. Constraint satisfaction problems (CSPs).
+            수학적 문제의 일종으로. "객체 셋(set)"을 정의/요구하는데. 그 객체 set은 몇가지 제약사항/한계를 가지는 일정 state를 무조건 만족해야 한다.
+            다음이 해당한다.
+            Type Inference.
+            Eight Qeens Puzzle. -> 8 여왕을 체크판에 배치. 서로 죽일 수 없는 위치에...
+            Map Coloring Problem.
+            Maximum Cut Problem.
+
+            X = {X1,... Xn} is set of a variables.
+            D = {D1,... Dn} is set of their respective domains of values.
+            C = {C1,... Cn} is set of constraints.
+
+            각 constraint인 Cj는 (tj, Rj)의 pair. tj는 X의 부분 집합이고. tj는 k 변수의 부분집합이다. Rj(일종의 관계)는 상응하는 Dj 의 부분 집합 도메인과 k-ary 관계?를 가지게 된다.
+            평가 v가 Constraint Cj를 만족하는지 알아보려면, tj에 변수를 할당하고, Rj 관계를 만족하는지 알아보면 된다.
+            평가 v는 "consistent". 만약에 아무런 Constraint도 위배하지 않을 경우에!
+            평가 v는 "complete". 만약에 모든 변수를 포함했을 경우!           
+
+            만약 v가 "consistent"하고, "complete"하면 평가는 solution이 된다.
+
+            보통 간단히는 Search 알고리즘으로 구현된다.
+
+            backtracking, constraint propagation, local search가 많이들 쓰인다.
+            1-1-1-1. Backtracking. 
+                재귀적 알고리즘.
+                초기에는 모든 변수는 unassigned.
+                각 스텝에서 변수를 고르고, 각 차례에 가능한 변수들 모두 assign!
+                각 partial assign된 변수에 대해서 consistency 체크가 수행된다.
+                만약 consistent할 경우. recursive call 발생.
+
+                "partial candidate solution"
+                예를 들어 Eight queen puzzle에서. partial candidate는 k queens가 k row of board에 배치될 경우의 수들이다.
+                이 경우의 수들에서 퀸이 서로 공격 가능한 경우 유기된다. 
+
+                이와 같이. backtracking하기 위해선 partial candidate solution 개념이 적용 가능한 케이스여야 한다.
+                //enumeration은 순서를 유지한 collection의 모든 요소의 리스트이다.
+
+                ### 방법에 대한 좀더 자세한 서술
+                partial candidate의 set을 enumerate한다. 
+                각 partial candidate는 tree node로 표현될 수 있다.
+                backtracking 알고리즘이 이 tree를 recursively traverse하여 (depth-first order)
+                각 node c에서 c가 completed되어 valid soultion이 될 수 있는지 체크한다.
+                만약 그렇지 않다면 c와 c의 모든 subtree는 무시된다.(pruned)
+                될 수 있다면. 1. c가 valid soultion인지 검사. 성공하면 사용자에게 report
+                             2. c의 모든 subtree를 검사.
+
+                다음 6가지 절차는 Instance Data P를 받아들여 다음 절차를 수행한다.
+                1. root(P) return the partial candidates at the root of the search tree.
+                2. reject(P, c) return true only if the partial candidate c is not worth completing.
+                3. accept(P, c) return true if c is a solution of P, and false otherwise.
+                4. first(P, c) generate first extension of candidate c.
+                5. next(P, s) generate the next alternative extension of a candidate. after the extension s.
+                6. output(P, c) use the soultion c of P as a solution. 
+                
+                ```pseudocode
+                backtrack(c) is
+                    if reject(P, c) then return
+                    if accept(P, c) the output(P, c)
+                    s <- first(P, c)
+                    while s != NULL do
+                        backtrack(s)
+                        s <- next(P, s)
+                ```
+
+            1-1-1-2. Combinational Explosion. the Rapid growth of the complexity of a problemn due to how the combinatorics of the problem is affected by the inputs, constraints, and bounds of the problem.
+
+
+    1-2. combinational explosion.
+
+    LR Parser.
+        bottom up parser. -> deterministic context-free languages.(DCFL)
+
+    ambiguous grammer. 
+        CFG의 일종. string인데 하나 이상의 leftmost derivation or parse tree를 가지는 경우가 존재하는 문법.
+
+    Context free languages(CFL) is generated by CFGs.
+
+    CFGs
+        A -> a`
+        A = nonterminal symbol
+        a` = String of terminal or/and nonterminal
+
+        a formar grammar is "context free" if its production rules can be applied regardless of the context of a nonterminal.
+        ==> no matter which symbols surround it. the single nonterminal on the left hand side can always be replaced by the right hand side.
+
+        <-> Context Sensitive Grammar.
+
+        모든 가능한 string은 production rule에 의해 묘사되어야 하고. production rule은 간단한 replacement이다.
+
+        Terminal  : elementary symbols of the lang. defined by formal grammars.
+        NonTerminal : replaced by groups of terminal symbols according to the production rules.
+
+        G (grammar) = (V, E, R, S)(E == 시그마)
+            V = 유한 set. V의 요소 v는 "nonterminal character" 혹은 "variable"라고 불린다.
+            Sigma = terminal의 유한 set.
+            R = V X (V U Sigma)* 의 유한 set. * = kleene star operation.
+                kleene star operation. = unary operation. (단항 연산자.)
+                set of string or set of symbol or characters.에 적용.
+                ==> 0혹은 그 이상의 반복.
+
+                A X B (A, B는 집합) -> X는 Cartesian product.
+                A X B는 A와 B의 모든 ordered pair(a, b)를 의미한다.
+
+            S는 Start variable (start symbol)로 전체 문장을 대표한다. V의 요소여야 한다.
+
+            R의 Production Rule은 "(a, 베타) 는 R의 요소"로 묘사된다. a는 V의 요소이고, 베타는 (V U sigma)*의 요소이다. 
+
+PDA(PushDown Automaton) 
+
+automata : Turing Machine > Pushdown automaton > Finite-state machine > combinational logic.
+(Computational power가 이렇다는 말. computational power란 수행력으로. 튜링머신이 할 수 잇는 것 중 일부는 PDA가 하지 못하고, PDA가 할 수 있는 모든 것을 튜링 머신이 할 수 있다는 말이다.)
+
+What is Finite-State Machine?(FSM or FSA)
+
+input에 의하여 특정 상태 X에서 특정 상태 Y로 전이(transition)할 수 있는 기계이며. 상태의 종류가 유한하다.
+
+"초기상태/ 가능한 상태의 목록/ 각 전이를 유발하는 input들" 로 구성된다.
+결정론적 유한상 기계와 비결정론적 유한상 기계 두가지로 구분된다.
+
+
+좀더 정확한 정의
+`state` : 시스테의 상태(transition execution을 대기)에 대한 묘사.
+`transition` : set of actions. when event is recevied or condition is fulfilled.
+
+Deterministic Finite Automaton.(DFA)
+
+각 transitions은 source state, input symbol로 unique 하게 구분된다.
+각 transition에 reading input symbol이 요구된다.
+
+NFA(Nondeterministic Finite Automaton)은 이런 제약 따를 필요 없당.
+즉 모든 DFA 는 NFA이다.
+
+유한 상 기계는 내부 상태 이외에 저장 공간이 없다?
+
+PDA : 
+FSM과 두가지 면에서 다르다.
+1. 스택을 가지며 스택의 최상단을 이용해 어떤 상태로 전이할 지 결정할 수 있다.
+2. transition 수행의 일환으로 스택을 조종(manipulate)할 수 있다.
+
+
+Lambda Calculus.
+ formal system in mathematical logic for expressing computation based on function abstraction and application using variable binding and substitution.
+ 컴퓨터 과학에서 람다 표현은 binding a variable in a function에 사용된다.
+ 
