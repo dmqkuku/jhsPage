@@ -1,0 +1,173 @@
+The Java Tutorials.
+
+# WildCards
+
+"The Wildcard is never used as a type argument for a generic invocation, a generic class instance creation, or a supertype."
+
+## upper bounded wildcards
+
+가정 : List<Integer>, List<Double>, List<Number>에 전부 해당하는 generic 메서드를 작성하고 싶다.
+=> upper bounded wildcards -> relax restrictions on a variable.
+-> List<Number> is more restrictive than List<? extends Number>, 전자는 List of Number 만 받아들이고, 후자는 List of Number and its subtypes를 받아들인다.
+
+## Unbounded wildcards
+
+위에서 언급되었듯이. wildcard를 메서드/클래스에 사용하면. 해당 코드 블록 내에서 invokation(method), instance creation이 불가능하다.
+즉 다음 코드는 불가능하다.
+```java
+public class MyCustomType {
+    public void invokeMe(){
+        //TODO:
+    }
+}
+public class ProcessorJdk8{
+    public void process(List<?> list){
+        list.get(0).invokeMe(); //불가능!
+                                //좋은 예제가 아닌데 넘어가자.
+                                //이유 : 리스트가 비어있을 수 있는 데, 널체크 하지 않음.
+    }                           
+}
+//for (? elem : list)는 불가능하지만, 아래 코드는 가능하다.
+public class ProcessorJdk11 {
+    public void process(List<?> list){
+        for(var elem : list){
+            elem.invokeMe() // 불가능!
+        }
+    }
+}
+public class Main{
+    public static void main(String[] args){
+        MyCustomType myObjc = new MyCustomType();
+        ProcessorJdk8 procesor = new Processor();
+        List<Object> list = new ArrayList<>();
+        list.add(myObjc);
+
+        procesor.process(list);
+    }
+}
+```
+
+이런 unbounded 가 유용할 경우가 다음 두 경우이다.
+
+1. Object클래스에 기재된, toString, equals, hashCode등을 이용해 구현 가능한 로직을 수행하는 메서드를 작성할 때.
+2. Generic class에 기재된 타입 파라미터에 관계없는 메서드를 이용해 구현 가능한 로직을 수행하는 메서드를 작성할 때. (List<?> list -> list.size(), list.clear()...)
+
+
+## lower bounded wildcards -> super.
+-> 타입을 제한할 수 있다.
+
+
+## Wildcards and  subtyping.
+
+사실 제네릭 타입간에는 특별한 관계가 없지만, wildcard를 이용해서 관계를 만들어 줄 수 있다.
+
+A extends B 관계라도.
+List<A>와 List<B>의 관계는 딱히 없다. 
+즉
+```java
+List<A> a = new ArrayList<>();
+List<B> b = a;      //complie error!~
+```
+그러나 wildcard를 잘 이용한다면?
+```java
+List<? extends Integer> intList = new ArrayList<>();
+List<? extends Number> numList = intList;//!! Valid !!. List<? extends Integer> is subtype of List<? extends Number>!!!!
+```
+List<Integer>           is subtype of   List<? extends Integer>
+List<? extends Integer> is subtype of   List<? extends Number>
+List<? extends Number>  is subtype of   List<?>
+List<Integer>           is subtype of   List<? super Integer>
+
+
+## Wildcard Capture and Helper Methods.
+
+가끔. 컴파일러가 wildcard의 타입을 추론하기도 한다. 이런 상황을 wildcard capture라고 부른다.
+
+에러 메시지에 "capture of"가 뜨지 않는 이상 wildcard capture에는 관심을 꺼도 된다.
+
+```java
+public class WildCardError{
+    void foo(List<?> i){
+        i.set(0, i.get(0)); // error!
+    }
+}
+```
+<div class="notice" markdown="1">
+**Why?**
+
+Wild card는 "any type"으로 이해하기 보다는 "some unknown type"으로 이해해야 한다. 즉 컴파일러는 unbounded ?에 대해 어떠한 타입 정보도 가지고 있지 않다.
+
+그래도 컴파일러는 i.get(0)가 Object를 반환한다는 사실은 알고 있다.
+
+그러나 ?타입이 Object라는 보장이 없기 때문에 i.set(0, some Object)는 안전하지 않은 호출이 되어. 컴파일러가 에러를 내뱉게 된다.
+
+이 코드에서 에러가 나는 이유는. 
+
+</div>
+```java
+public class WildCardError{
+    void foo(List<?> i){
+        fooHelper(i);
+    }
+    private <T> void fooHelper(List<T> i){
+        i.set(0, i.get(0));
+    }
+}
+```
+
+
+## Guideliens for wildcard use
+
+
+함수에 선언된 파라미터를 두가지 중 하나라고 가정하자.
+1. In 파라미터 -> 함수내에서 읽고 사용하기 위한..
+2. Out 파라미터 -> 함수 밖으로 도출해 내기 위한..
+
+이 가정하에 다음 가이드라인을 따르자.
+1. In의 경우. upper bounded wildcard를 사용하자.
+2. out의 경우. lower bounded wildcard를 사용하자.
+3. In이 Object클래스에 정의된 메서드만 사용해서 접근하고 있을 경우. unbounded wildcard사용.
+4. 만약 In, Out 둘다 해당할 경우 wildcard를 사용하지 마라.
+
+주의! wildcard로 선언해도 readonly가 아니다!!
+예를 들어
+List<?> someList;의 경우
+someList.add(Null);
+someList.clear();
+for(var elem : someList){
+    elem.remove();
+}
+가능!!!.
+Capture를 이용한 helper method로도 readonly를 깨뜨릴 수 있음.
+
+============================================================
+
+## Item31. Use bounded Wildcards to Increase API flexibility.
+
+PECS : Producer-extends. Consumer-super.
+
+Do not use Bounded wildcard types as return types.
+
+If the user of a class has to think about wildcard types, there is probably something wrong with its API.
+
+## Item 32. Combine Generics and varags judiciously.
+
+Java에서. Varargs. 즉 가변인수는 다음과 같이 구현됨
+
+varags methods를 invoke할 경우. varags 파라미터를 들고 있는 배열이 형성된다. 
+
+Heap Pollution???
+
+어거지로 사용할 수 있고, 실전에서 유용하다는데 글쎄... 나중에 사용할 일이 있으면 다시 보도록 하자.
+
+## item 33. Consider Typesafe Heterogeneous Containers.
+
+PASS~!
+
+--------------------------------------------------------
+
+Chap6. Enums and Annotations.
+
+Item34. Use enums instead of int constants.
+
+

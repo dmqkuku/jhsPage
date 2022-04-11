@@ -1,0 +1,145 @@
+---
+title: "2023-04-11 개발 일기 Day 5"
+categories: [Diary]
+tags: [Diary, Java, Effective Java]
+excerpt: "일기 5일차 : Effective Java Chap4. Item 29~. [What is WildCards]"
+classess: wide
+use_math: true
+published: false
+---
+
+## What is Wildcard?
+
+Wildcard는 "어떤 타입(any Type)"으로 이해하기 보다는. "어떤 알수 없는 타입(any unknown type)"으로 이해하는 게 낫다.
+
+참고 : <a href="https://docs.oracle.com/javase/tutorial/java/generics/index.html">[Oracle] The Java Tutorial. Generics</a>
+
+> The Wildcard is never used as a type argument for a generic invocation, a generic class instance creation, or a supertype.
+
+```java
+public class MyCustomType {
+    public void invokeMe(){
+
+    }
+}
+public class ProcJdk8 {
+    public void process(List<?> list){
+        for(int idx = 0; idx < list.size() ; ++idx){
+            list.get(idx).invokeMe();
+        } //불가능!!!!
+    }
+}
+public class ProcJdk11 {
+    public void process(List<?> list){
+        for(var elem : list){   //var 키워드는 10버전부터 도입되었다.
+            elem.invokeMe(); // 불가능!
+        }
+    }
+}
+public class Main{
+    public static void main(String[] args){
+        MyCustomType myObj = new MyCustomType();
+
+        ProcJdk8 proc8 = new ProcJdk8();
+        ProcJdk11 proc11 = new ProcJdk11();
+
+        List<Object> list = new ArrayList<>();
+        list.add(myObj);
+
+        proc8.process(list);
+        proc11.process(list);
+    }
+}
+```
+위와 같이, Wildcard를 메서드/클래스에 기재하면, 해당 코드 블록 내에서 그 타입에 대한 method invokation, instance creation은 불가능하다.
+
+
+제약이 많은 wildcard가 유용한 경우는 대표적으로 다음 두가지 경우이다.
+1. Object클래스에 기재된, toString, equals, hashCode등을 이용해 구현 가능한 로직을 수행하는 메서드를 작성할 때.
+2. Generic class에 기재된 타입 파라미터에 관계없는 메서드를 이용해 구현 가능한 로직을 수행하는 메서드를 작성할 때. (List<?> list -> list.size(), list.clear()...)
+
+## Wildcard 와 invariant
+
+제네릭은 invariant즉. List<A>와 List<B>는 A와 B의 관계와 무관계.
+```java
+List<A> a = new ArrayList<>();
+List<B> b = a;  //compile error!
+```
+wild card를 잘 사용하면 이런 경우에 관계를 만들어 줄 수 있다.
+```java
+List<? extends Integer> intList = new ArrayList<>();
+List<? extends Number> numList = intList; // Valid!
+//conclusion : List<? extends Integer> is subtype of List<? extends Number>
+```
+cheatsheats
+
+List<Integer>           is subtype of   List<? extends Integer>
+List<? extends Integer> is subtype of   List<? extends Number>
+List<? extends Number>  is subtype of   List<?>
+List<Integer>           is subtype of   List<? super Integer> 
+  
+## Wildcard and Capture
+
+가끔 컴파일러가 wildcard의 타입을 추론하기도 하는데, 이를 wildcard capture라고 부른다.
+```java
+public class WildCardError{
+    void foo(List<?> i){
+        i.set(0, i.get(0)) //error! why?
+    }
+}
+```
+<div class="notice" markdown="1">
+컴파일러는 unbounded ?에 대하여 어떠한 타입 정보도 가지고 있지 않다.
+
+컴파일러는 i.get(0)가 Object를 반환한다는 사실을 알고 있다.
+??? 디버거 연결하니까 타입이 찍힌다 ???
+
+하지만! ? 타입이 들어오긴 들어올텐데, Object라는 보장은 없다!!!!(자바에서 모든 원시값을 제외한 타입은 Object 하위 타입인데요?)
+
+따라서 i.set(0, i.get(0));는 안전하지 않은 호출이 된다.
+</div>
+
+<div class="notice" markdown="1">
+자바 컴파일러는 ?을 #CAP1이런식으로 취급한다.
+</div>
+
+```java
+public class WildCardError{
+    void foo(List<?> i){
+        fooHelper(i);
+    }
+    private <T> void fooHelper(List<T> i){
+        i.set(0, i.get(0));
+    }
+}
+```
+
+## Guidelines for Wildcard use.
+
+함수에 선언된 파라미터가 용례에 따라 다음과 같이 나뉜다고 가정하자
+1. In
+2. Out
+
+이 가정하에 다음 가이드라이을 따르자.
+1. In의 경우. upper bounded wildcard를 사용하자.
+2. out의 경우. lower bounded wildcard를 사용하자.
+3. In이 Object클래스에 정의된 메서드만 사용해서 접근하고 있을 경우. unbounded wildcard사용.
+4. 만약 In, Out 둘다 해당할 경우 wildcard를 사용하지 마라.
+
+<div class="notice--warning" markdown="1">
+주의! wildcard로 선언해도 readonly가 아니다!!
+
+
+예를 들어 List<?> someList;의 경우
+
+```java
+someList.add(Null);
+someList.clear();
+for(var elem : someList){
+    elem.remove();
+}
+```
+가능!!!.
+
+Capture를 이용한 helper method로도 readonly를 깨뜨릴 수 있음.
+</div>
