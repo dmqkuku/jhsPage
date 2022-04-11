@@ -282,6 +282,50 @@ objArray[0] = "I Dont't fit in!";
 array <= reify(실체화). 런타임에도. 자신이 담기로 한 인자의 타입을 인지하고 확인하게 된다.
 Generic <= 런타임에는 타입 정보가 소거된다. 즉 원소 타입을 컴파일 타임에만 검사하게 된다.(Type Erasure)
 
+<div class="notice" markdown="1">
+**What is Type Erasure?**
+
+1. Generic types에 기술된 모든 타입 파라미터(T, K, V등)을 지우고, bound되어 있다면 bound로. unbound되어 있다면, Object로 채워넣는다.
+
+2. type safety를 보장하기 위해 type cast를 필요한 경우에만 넣어준다. <- "complie time check" and "Execution time cast" 
+
+```java
+@Test
+void genericTest(){
+    List<String> list = new ArrayList<>();
+    list.add("list");
+    System.out.println(list.get(0));
+}
+```
+코드의 컴파일 결과를 다시 디컴파일하면...
+```java
+@Test
+void genericTest(){
+    List<String> list = new ArrayList();
+    list.add("list");
+    System.out.println((String)list.get(0));
+}
+```
+
+3. extended generic type에서 다형성을 보존하기 위해 bridge method를 만들어준다 <- ?
+
+> what is Bridge Method?
+
+참고 : <a href="https://docs.oracle.com/javase/tutorial/java/generics/erasure.html#:~:text=Generics%20were%20introduced%20to%20the,the%20type%20parameters%20are%20unbounded.">Type Erasure [The Java Tutorial]</a>
+</div>
+
+<div class="notice" markdown="1">
+
+generic class, interface를 상속한 경우. raw type으로 사용될 수 있도록 서포트해준다. 사용자가 직접 호출할 수 없다.
+
+Generic Class, Interface를 상속하면서 raw type으로 사용할 경우. 컴파일러가 만들어 준다.
+
+Type Erasure와 마찬가지로 디컴파일러를 사용해도 육안으로 확인할 수 없었다.
+
+참고 : <a href="https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html">Effects of Type Erasure and Bridge Methods. [Oracle]</a>
+
+참고 : <a href="http://stas-blogspot.blogspot.com/2010/03/java-bridge-methods-explained.html">Java Bridge Method Explained</a>
+</div>
 
 이렇게 주요한 차이점이 있기 때문에. Generic type array는 Java에서 불가능!
 

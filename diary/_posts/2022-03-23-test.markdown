@@ -4,7 +4,7 @@ categories: [Diary]
 tags: [Diary]
 excerpt: "일기 계획"
 classess: wide
-
+published: false
 ---
 
 안녕하세요. 처음 뵙겠습니다.
