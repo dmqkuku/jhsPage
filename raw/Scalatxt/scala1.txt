@@ -1,0 +1,118 @@
+Scala 3.1
+
+var / val
+
+Array : Mutable
+List : Immutable
+
+스칼라는 연산자 오버로딩을 지원하지 않는다. 대신 + - * ::: 등을 메서드이름으로 허용한다.
+
+튜플 : 여러 다른 타입의 요소를 포함 가능한 Immutable. 
+```scala
+val tupleExample = (11, 12, 13)
+```
+
+집합(Set). 맵(Map)
+-> Immutable과 Mutable 둘다 제공해줌.
+```
+var jetSet = Set("Boing", "Airbus")
+jetSet += "Lear"
+```
+Lear가 추가된 새로운 Set 인스턴스를 리턴!
+```
+val jetSet2 = Set("Boing", "Airbus")
+jetSet2 += "Lear" // 불가능!.
+```
+
+```
+val query = jetSet.contains("Boing")
+jetSet.contains("Cessna")
+```
+Mutable set의 경우
+```
+import scala.collection.mutable
+val movieSet = mutable.Set("Spotlight", "Moonlight")
+movieSet += "Parasite"
+```
+
+Map의 경우
+```
+val romanNumeral = Map(
+    1 -> "I",
+    2 -> "II"
+    3 -> "III"
+    4 -> "IV"
+)
+val four = romanNumeral(4)
+```
+Mutable Map
+```
+val treasureMap = mutable.Map.empty(Int, String)
+treasureMap += (1 -> "Go to Island")
+treasureMap += (2 -> "Find big X on ground")
+treasureMap += (3 -> "Dig")
+```
+
+val <- functional styles...
+
+====================================================================================
+
+클래스는 객체에 대한 청사진이다.
+
+```
+class ChecksumAccumulator:
+    val sum = 0 //field
+    var m_sum = 0
+    private val p_sum = 0
+    def add(b : Byte) : Unit =
+        b = 1   // error!
+        sum += b
+    def checksum() : Int = 
+        ~(sum & 0xFF) + 1
+
+var acc = new ChecksumAccumulator
+```
+
+싱글톤 객체
+-> static 멤버가 안되여...
+클래스 대신 Object키워드 사용~
+```
+object ChecksumAccumulator
+```
+
+Companion object -> 동료 객체... === 클래스 이름과 같은 이름을 갖는 싱글톤 객체~
+클래스와 싱글톤 객체가 같은 파일안에 있을 때 서로 프라이빗에 접근 가능
+
+```
+class singleton:
+  val sum = 0
+  var m_sum = 0
+  def add(b : Byte) : Unit = m_sum += b
+  def checksum(): Int = ~(sum & 0xFF) + 1
+
+import scala.collection.mutable
+object singleton:
+  private val cache = mutable.Map.empty[String, Int]
+  def calculate(s : String) : Int =
+    if cache.contains(s) then
+      cache(s)
+    else
+      val acc = new singleton
+      for c <- s do
+        acc.add((c >> 8).toByte)
+        acc.add(c.toByte)
+
+      val cs = acc.checksum()
+      cache += (s -> cs)
+      cs
+```
+
+단독객체. Standalone Object
+
+---------------------------------------------------
+
+case class. 케이스 클래스.
+
+```
+case class Person(name : String, age : Int)
+```
