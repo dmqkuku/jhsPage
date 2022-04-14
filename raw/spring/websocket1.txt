@@ -28,3 +28,4 @@ Therefore to build a WebSocket application today, fallback options are required 
 
 
 1.2 Messaging Architecture.
+
