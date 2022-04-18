@@ -64,3 +64,63 @@ Item34. Use enums instead of int constants.
 
 Item35. Use Instance Fields Instead of Ordinals...
 
+  모든 enum은 내재적으로 단일 int 값과 연관되어 있다.
+  모든 enum은 Ordinal 메서드를 가지고 있다.
+  이 ordinal메서드는 숫자 순서를 리턴하게 된다. 
+  이를 abuse하려는 욕심이 생길 수 있다.
+  ```
+     public enum Ensemble{
+         SOLO, DUET
+         pubilc int numberOfMusicians{return ordinal() + 1;}
+     }
+  ```
+총체적 난국. 만약 순서가 바뀌면 fragile!
+대신 다음을 고려하라!
+```
+    public enum Ensemble{
+        SOLO(1), DUET(2), Double_Quartet(8)
+        private final int numberOfMusicians;
+        Ensemble(int size) {this.numberOfMusicians = size;}
+        pubilc int numberOfMusicians(){return numberOfMusicians;}
+    }
+```
+
+Item36. Use EnumSet instead of bit fields.
+```
+    public class Text{
+        public static final int STYLE_BOLD = 1 << 0;
+        public static final int STYLE_ITALIC = 1 << 1;
+        .
+        .
+        .
+    }
+    .
+    .
+    .
+    text.applyStyles(STYLE_BOLD | STYLE_ITALIC);
+```
+int constant의 단점을 그대로 지닌다.
+출력시 알아보기 힘들고? <- 이방식에 숙련된 사람에게는 문제 없을듯
+모든 요소를 쉽게 iterate할 수 없다.
+*애초에 자바에는 unsigned가 업구
+API만들때. 최대 비트 수와 그에 따른 타입 종류를 파악해야 한다? <- int long. <- 어거지인듯.
+
+
+->EnumSet사용하자. Set의 일종!
+```
+public class Text{
+    public enum Style {BOLD, ITALIC, ...};
+    public void applyStyles(Set<Styles) styles){...}
+}
+.
+.
+.
+text.applyStyles(EnumSet.of(Style.BOLD, Style.ITALIC));
+```
+
+이건 좀 논란의 여지가 있을 듯.
+
+Item37. Use EnumMap instead of ordinal indexing.
+idea
+
+
