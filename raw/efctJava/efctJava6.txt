@@ -120,7 +120,34 @@ text.applyStyles(EnumSet.of(Style.BOLD, Style.ITALIC));
 
 이건 좀 논란의 여지가 있을 듯.
 
+Enum에 메서드와 필드를 막 때려박는 것에는 논란의 여지가 있다.
+
 Item37. Use EnumMap instead of ordinal indexing.
-idea
+
+Item38. Emulate Extensible enums with interfaces.
+
+Item39. Prefer Annotations to naming patterns.
+
+naming pattern -> 예를들어. @Controller 어노테이션 대신 HomeController라고 명명하고 뒤에 붙은 Controller를 이용하여
+스프링이 Controller를 찾는다고 생각해보자~
+
+-> 오탈자 -> 조용한 failure
+-> class명을 Controller라고 지으라고 했지만, 모르고 메서드나 필드명을 Controller라고 지을수 있다.
+-> 프로르맹 요소를 매개변수로 전달할 방법이 마땅히 없다. 뒤에 덕지 덕지 붙이면? 아주 더러워진다.
+
+애너테이션 선언에 사용하는 애너테이션 == meta annotation.
+@Test 의 @Retention(RetentionPolicy.RUNTIME) -> 에너테이션이 유지되는 스코프?
+         @Target(ElementType.METHOD) -> 에너테이션 달 수 있는 곳
+
+TODO:
+Annotation 구현해보자~
+.
+.
+.
+
+Item 40. @Override Annotation을 일관되게 사용하라.
+
+overridng하는 게 아니라. 다중 정의를 해놓고 나중에 왜 안되! 이럴 가능성!
+
 
 

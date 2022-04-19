@@ -1,0 +1,16 @@
+아주 아름다운~ 스프링의 버그~
+
+VO에서 Char로 선언하고. DB에서도 char(1)으로 되어있다.
+JSP에서 끌어와서 x eq "X"하면 에러!
+
+Cannot convert [X] of type [class java.lang.String] to [class java.lang.Long]
+"https://download.oracle.com/otn-pub/jcp/expression_language-2.2-mrel-eval-oth-JSpec/expression_language-2_2-mrel-spec.pdf?AuthParam=1650353039_ee87dd4e3ef4dcebd99672adb2cbf82d"
+의 1.8.1 참고
+ㅋㅋㅋ
+"If A or B is Byte, Short, Character, Integer, or Long coerce both A and B to
+Long and apply operator"
+
+즉 char일 경우. long으로 아무튼 바꿔버린다~
+
+해결법 : x eq "X".charAt(0)혹은
+        x eq 88 (ASCII 코드표 참조~)
