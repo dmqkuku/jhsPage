@@ -5,7 +5,7 @@ tags: [Diary, Java, Effective Java]
 excerpt: "일기 5일차 : Effective Java Chap4. Item 29~. [What is WildCards]"
 classess: wide
 use_math: true
-published: false
+published: true
 ---
 
 ## What is Wildcard?
