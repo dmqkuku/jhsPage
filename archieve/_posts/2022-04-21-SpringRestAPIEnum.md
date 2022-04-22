@@ -80,3 +80,7 @@ HTTP/TCP
 why PUSH?
 
 Why OAuth?
+
+계층형 쿼리를 한방에 담기...
+
+MYBATIS USEGENERATEDKEYS = TRUE에 대하여...
