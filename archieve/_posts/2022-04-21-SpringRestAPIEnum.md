@@ -66,21 +66,3 @@ UPDATE TW_MYCOM_SET_SCOPE
 
 걱정 : 1 = 2 이런식으로 정수 ordinal 값이 박히지 않을까 걱정.... <- 일단 name이 자동으로 박히긴 함. 왜???
 
-PutMapping으로 파일 못보냄??
-
-@Tag(name = "mycom", description = "마이콤 API")
-	@Operation(summary = "배경 이미지 변경")
-	@PostMapping(path = "/bg/set", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public CommonResVo setBackgroundUrl(@Valid MyComBgParamVO param, BindingResult bindingResult){
-
-도커 "이미지"란?
-
-HTTP/TCP
-
-why PUSH?
-
-Why OAuth?
-
-계층형 쿼리를 한방에 담기...
-
-MYBATIS USEGENERATEDKEYS = TRUE에 대하여...
