@@ -57,6 +57,19 @@ MYBATIS에서~
 ${}와 #{}!
 "https://logical-code.tistory.com/25"
 
+String 값  String val = "Hello"; 에 대하여
+
+#{val} -> 'Hello'
+${val} -> Hello
+
+보통 사용자의 입력은 신뢰하면 안된다. 사용자 입력이 val을 통해 흘러 들어온다면.  ${} 은 sql 인젝션에 아주 취약한 코드가 된다. 또한 사용자의 입력이 자유로운 한. sqlException이 터지기 아주 좋은 환경이 된다.
+
+```sql
+SELECT REG_DT, NAME, RES_CODE FROM REQ_HIST ORDER BY ${val}
+```
+val이 예상한 대로 ASC, DESC가 들어온 다면 상관없지만. 그렇지 않을 경우도 충분히 예상할 수 있다.
+기억하자 사용자 입력을 신뢰해선 안된다.
+
 https://mybatis.org/mybatis-3/ko/sqlmap-xml.html
 
 UPDATE TW_MYCOM_SET_SCOPE
@@ -65,6 +78,56 @@ UPDATE TW_MYCOM_SET_SCOPE
 			USER_SN = #{userSn}
 
 걱정 : 1 = 2 이런식으로 정수 ordinal 값이 박히지 않을까 걱정.... <- 일단 name이 자동으로 박히긴 함. 왜???
+-> MyBatis 에서 기본적으로 구현된. EnumTypeHandler / EnumOrdinalTypeHandler 두가지가 존재함
+
+varchar값을 enum으로 맵핑해주는 EnumTypeHandler가 기본설정값이다. 
+```java
+enum Code {
+	SUCCESS, NO_INPUT, SERVER_ERROR, INVALID_REQ
+}
+```
+테이블이 다음과 같고. [Table name은 REQ_HIST]
+| REQ_DT | NAME | RES_CODE |
+|-------|--------|---------|
+| varchar(14) | varchar(50) | varchar(14) |
+| 20220423162823 | Jang | SUCCESS |
+
+VO가 다음과 같다고 하자.
+```java
+class ReqHistVO {
+	private String reqDt;
+	private String name;
+	private Code resCode;
+}
+```
+```sql
+다음과 같은 SQL로 받을 수 있다.
+SELECT REQ_DT, NAME, RES_CODE FROM REQ_HIST;
+```
+SUCCESS -> Code.SUCCESS로 맵핑되게 되고, 만약 myBatis를 이용하여. 
+
+#{resCode}, 혹은 ${resCode}라고 작성한다면, 각각 'SUCCESS', SUCCESS 가 박히게 된다.
+
+반면 EnumOrdinalTypeHandler를 사용할 경우. DB의 숫자값이 맵핑되게 된다. 따라서 이 경우
+
+
+| REQ_DT | NAME | RES_CODE |
+|-------|--------|---------|
+| varchar(14) | varchar(50) | int(1) |
+| 20220423162823 | Jang | 0 |
+
+0 -> Code.SUCCESS로 맵핑되게 된다. 
+
+<div class="notice" markdown="1">
+인터넷에 java enum start from 1 이라고 검색할 경우. 다음 글을 마주칠 수 있다.
+https://stackoverflow.com/questions/35560954/how-can-a-java-enum-start-with-1
+대충 읽으면. 본인처럼 Java enum이 1부터 시작한다는 소리인줄 알 수 도 있다.
+Java.time.DayOfWeek를 뜯어보면. 그 안에서 ordinal을 조작해서 1부터 시작하는 것처럼 만들어 놓았다는 것을 알 수 있다.
+
+Diary쪽 포스트에 적어놓았듯이. enum의 ordinal을 조작하지 말자!!
+</div>
+
+EnumTypeHandler 
 
 PutMapping으로 파일 못보냄??
 
