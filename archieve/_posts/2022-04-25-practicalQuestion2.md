@@ -47,6 +47,70 @@ http://www.tcpipguide.com/index.htm 참고.
 why PUSH?
 
 Why OAuth?
+OAuth = Open Authorization. -> Access delegation의 open standard이다.(Not Authentication!)
+commonly used as a way for internet users to grant websites or applications access to their information on other websites but without giving them the passwords
+to permit the users to share information about their accounts with third-party applications or websites.
+https://en.wikipedia.org/wiki/OAuth
+예를 들어 목표 resource에 접근하기 위해 Google account을 거쳐야 하는 상황이 있다고 가정해 보자...
+old way에서는, 구글 계정 정보를 resource 관문 서버에 넘겨서 authorization을 진행하여야 한다.
+
+OAuth2에서는. user -> Google -> accessToken -> Resource Server 이렇게 진행된다.
+
+
+https://anil-pace.medium.com/json-web-tokens-vs-oauth-2-0-85dd0b32057d#:~:text=JWT%20is%20a%20JSON%20based%20security%20token%20forAPI%20Authentication&text=JWT%20is%20just%20serialised%2C%20not,are%205%20different%20flow%20patterns.
+[JwT vs OAuth]
+Summary
+JWT is a JSON based security token forAPI Authentication
+JWT can contain unlimited amount of data unlike cookies.
+JWT can be seen not but modifiable once it’s sent.
+JWT is just serialised, not encrypted.
+OAuth is not an API or a service: it’s an open standard for authorization .
+OAuth is a standard set of steps for obtaining a token. There are 5 different flow patterns.
+Authorization code grant is the most secure OAuth grant type
+Resource Owner grant type is the least secure
+
+https://frontegg.com/blog/oauth-flows#:~:text=OAuth%20flows%20are%20essentially%20processes,involvement%20for%20back%2Dend%20systems.
+Demystifying OAuth
+
+1. Resource Owner : grant access to protected resources. 
+2. Resource Server : hold the resources the resources owner needs access to.
+3. Client : application request access to protected resources
+4. Authorization Server : accepting credentials & checking if they are authorized to accesa a reestricted resources.
+[OAuth Flow Types]
+1. Authorization Code Flow
+How this OAuth flow works:
+
+The user clicks on a login link in the web application.
+The user is redirected to an OAuth authorization server, after which an OAuth login prompt is issued.
+The user provides credentials according to the enabled login options.
+Typically, the user is shown a list of permissions that will be granted to the web application by logging in and granting consent.
+The user is redirected to the application, with the authorization server providing a one-time authorization code.
+The app receives the user’s authorization code and forwards it along with the Client ID and Client Secret, to the OAuth authorization server.
+The authorization server generates an ID Token, Access Token, and an optional Refresh Token, before providing them them to the app.
+The web application can then use the Access Token to gain access to the target API with the user’s credentials.
+
+2. Client Credentials Flow
+The application authenticates with the OAuth authorization server, passing the Client Secret and Client ID.
+The authorization server checks the Client Secret and Client ID and returns an Access Token to the application.
+The Access Token allows the application to access the target API with the required user account.
+
+3. Resource Owner Password Flow
+The user clicks a login link in the application and enters credentials into a form managed by the app.
+The application stores the credentials, and passes them to the OAuth authorization server.
+The authorization server validates credentials and returns the Access Token (and an optional Refresh Token).
+The app can now access the target API with the user’s credentials.
+
+4. Implicit Flow with Form Post.
+This flow uses OIDC to implement a web sign-in that functions like WS-Federation and SAML. The web app requests and receives tokens via the front channel, without requiring extra backend calls or secrets. With this process, you don’t have to use, maintain, obtain or safeguard secrets in your app. 
+
+5. Hybrid Flow
+This flow can benefit apps that can securely retain Client Secrets. It lets your app obtain immediate access to an ID token, while enabling ongoing retrieval of additional access and refresh tokens. This is useful for apps that need to immediately gain access to data about the user, but must perform some processing prior to gaining access to protected resources for a long time.
+
+6. Device Authorization Flow
+This flow makes it possible to authenticate users without asking for their credentials. This provides a better user experience for mobile devices, where it may be more difficult to type credentials. Applications on these devices can transfer their Client ID to the Device Authorization Flow to start the authorization process and obtain a token.
+
+
+
 
 계층형 쿼리를 한방에 담기...
 
