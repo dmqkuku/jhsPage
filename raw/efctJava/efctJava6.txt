@@ -147,7 +147,22 @@ Annotation 구현해보자~
 
 Item 40. @Override Annotation을 일관되게 사용하라.
 
+@Override -> Complier와 IDE에게 힌트!!
 overridng하는 게 아니라. 다중 정의를 해놓고 나중에 왜 안되! 이럴 가능성!
+따라서 abstract class나 interface를 상속하는 경우 . 자식 클래스에서 오버라이딩하는 모든 메서드에 @Override.
+
+Item 41. Use Marker Interfaces to define types.
+아무런 메서드도 가지지 않은 인터페이스로. 구현하는 클래스로 하여금. 사용자가 "아 이런 특성을 가지고 있구나"라고 인지하도록 쓰인다.
+Marker annotation이 존재하므로 Marker Interfaces는 필요없다?
+-> 비교해 보았을 때. 두가지의 장점이 존재한다.
+-> 1. Marker interface define types.! -> ex) Serializable. 
+-> 2. more Precise targeting! -> Marker Annotation은 어떠한 클래스/ 인터페이스에 적용 가능하다. 그에 반하여 marker interface는...????
+
+언제 marker annotation을 쓰고. 언제 marker interface를 사용하는가?
+-> 만약에 marker가 클래스나 인터페이스이외에도 사용된다면? -> annotation
+-> 만약 클래스나 인터페이스에만 사용된다면 -> 이 마킹이 된 객체만 사용할 메서드들을 작성할 일이 있을경우! -> interface;
+
+
 
 
 

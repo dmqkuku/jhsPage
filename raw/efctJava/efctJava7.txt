@@ -1,0 +1,126 @@
+Chap7. Lambdas and Streams.
+
+Item42. prefer Lambdas to anonymous classes.
+
+단일 abstract method를 가진. 인터페이스나 추상 클래스 -> function types/ function object로 일컫어진다.
+
+초기 Java1.1당시 function object 생성 방법은 anonymous class 였다.
+```
+Collections.sort(words, new Comparator<String> () {
+    public int compare(String s1, Strint s2){
+        return Integer,compare(s1.length(), s2.length());
+    }
+})
+```
+이렇게 장황했으니. java에서 함수형 프로그래밍은 꺼리는 일이 되었다.
+Java8 부터 이는 개선되었다.
+Collections.sort(words, (s1, s2) -> Integer.compare(s1.length(), s2.length()));
+s1, s2 -> 의 타입은 적혀있지 않지만 컴파일러가 type deduce해낸다.(타입 추론);
+가아끔 컴파일러가 타입 추론을 제대로 하지 못할 경우 -> 내가 타입을 정해주어야 한다.
+타입 추론 방식은 아주 복잡하기 때문에 일일히 설명할 수 없고.
+타입 생략하여 람다를 작성하다가. 컴파일러가 에러를 내뱉으면 고치도록 하여라.
+
+당연하지만. generic 정보를 제대로 주어야만 컴파일러가 타입을 제대로 추론해낼 수 있다.
+
+```
+public enum Operation {
+    PLUS("+") {
+        public double apply(double x, double y) { return x + y; }
+    },
+    MINUS("-") {
+        public double apply(double x, double y) { return x - y; }
+    },
+    TIMES("*") {
+        public double apply(double x, double y) { return x * y; }
+    },
+    DIVIDE("/") {
+        public double apply(double x, double y) { return x / y; }
+    };
+    private final String symbol;
+
+    Operation(String symbol) { this.symbol = symbol; }
+
+    @Override public String toString() { return symbol; }
+
+    public abstract double apply(double x, double y);
+}
+```
+코드는 다음과 같이 고칠 수 있다.
+Enum 인스턴스 필드는 하나의 constant-specific class bodies이다.
+만약에 enum field constructor에 넣어주면. field에 lambda가 저장될 것.
+```
+public enum Operation {
+    PLUS ("+", (x, y) -> x + y),
+    MINUS ("-", (x, y) -> x - y),
+    TIMES ("*", (x, y) -> x * y),
+    DIVIDE("/", (x, y) -> x / y);
+    private final String symbol;
+    private final DoubleBinaryOperator op;
+    Operation(String symbol, DoubleBinaryOperator op) {
+        this.symbol = symbol;
+        this.op = op;
+    }
+    @Override public String toString() { return symbol; }
+    public double apply(double x, double y) {
+        return op.applyAsDouble(x, y);
+    }   
+}
+```
+람다는 이름도. documentation도 없다.!!!! 만약 람다 내부 로직이. self-explanator하지 않거나. 길어진다면. 람다로 만들지 말자!!!.
+람다와 익명 클래스 둘다 제대로 serialize/ deserialize되지 않는다!!.
+If you have
+a function object that you want to make serializable, such as a Comparator,
+use an instance of a private static nested class
+익명 클래스가 아예 쓸모 없는 건 아니다. 익명 클래스는 인스턴스를 만들 수 있고. 람다는 없다. 람다는 자기 자신에 대한 참조를 얻을 수 없다.
+람다 안에서 this 키워드는 enclosing instance를 가리킨다.
+
+익명 클래스는 가급적 사용하지 말고 대신 람다를 사용하되. 해당 타입의 인스턴스를 만들어야 하는 경우 익명 클래스를 사용하자.
+
+Item43. Prefer Method Reference to Lambdas.
+-> bolierplate제거를 위해!
+```
+map.merge(key, 1, (count, incur) -> count + incur);
+```
+```
+map.merge(key, i, Integer::sum);
+```
+There’s nothing you can do with a method reference that you can’t also do
+with a lambda (with one obscure exception—see JLS, 9.9-2 if you’re curious)
+-> generic lambda type은 존재하지 않는다!!!.
+```
+interface G1{
+    <E extends Exception> Object m() throws E;
+}
+interface G2 {
+    <F extends Exception> String m() throws Exception;
+}
+interface G extends G1, G2{}
+
+->G의 function type은? <F extends Exception> () -> String throws F
+```
+-> 따라서 functional interface의 generic function type 은 method reference expresion로 구현 가능하지만. lambda 식으로는 불가능하다.
+
+대부분의 IDE에서는 자동으로 가능한 한 method reference로 바꾸도록 추천해 준다. 대체로 옳은 소리이고. 클래스 이름이 너무 긴 경우만 조금 꺼려질 수 있다.
+
+static method reference 이외에도. 
+Bound. Unbound. Class Constructor. Array Constructor.
+bound - > InstatnceName.now()::methodnae
+Unbound -> ClassName::methodName
+class -> ClassName<Generics>::new
+Array -> int[]::new
+
+Item44. Favour the use of standard functional interfaces;
+
+람다 덕분에 Template Method pattern은 less favorable...
+-> 모던 방법은 static factory나 생성자에 funtion obejct를 넘겨서 같은 효과를 취할 수 있도록????????
+예를들어서 linkedHashMap을 상속한 클래스에서 removeEldestEntry를 구현함으로써 일종의 캐시로 사용할 수 있다.
+
+```
+protected boolean removeEldestEntry(Map.Entry<K, V) eldest){
+    return size() > 100;
+}
+```
+이 구현을 함수 객체를 쓰도록 바꾸어 보자!
+```
+
+```
