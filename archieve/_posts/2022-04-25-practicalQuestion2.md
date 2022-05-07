@@ -136,3 +136,16 @@ https://www.w3.org/TR/html4/interact/forms.html#h-17.13.4
 3. Base64 encoding -> String tokeneizer를 이용한다.
 4. BeanValidation을 이용하여 8개라면 8의 사이즈의 배열만 받을 수 있도록 구현한다.
 
+(Array.from(document.querySelectorAll("selector")).forEach(function(e){
+	e.addEventListener("click", function(){
+
+	})
+}))
+
+(Array.from(document.querySelectorAll("selector")).forEach(function(e){
+	e.addEventListener("click", function(){
+
+	})
+}))
+
+<- 세미 콜론을 붙이지 않을 경우 에러
