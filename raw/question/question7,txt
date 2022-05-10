@@ -1,0 +1,54 @@
+```
+private List<Map<String, Long>> sortOrdList(List<Map<String, Long>> ords){
+    return ords.stream().sorted((x, y) -> x >= y ? 1 : -1).collect(Collectors.toList());
+}
+```
+```
+private List<Map<String, Long>> sortOrdList(List<Map<String, Long>> ords){
+    return ords.stream().sorted((x, y) -> {
+        Long a = Long.valueOf(x.get("CNT"));
+        Long b = Long.valueOf(y.get("CNT"));
+        if(a == b){
+            return 0;
+        }else if(a > b){
+            return 1;
+        }else {
+            return -1;
+        }
+    }).collect(Collectors.toList());
+}
+```
+```
+return ords.stream().sorted((x, y) -> x.get("CNT").compareTo(y.get("CNT"))).collect(Collectors.toList());
+```
+```Exception
+java.lang.Integer cannot be cast to java.lang.Long ?????
+```
+
+List<Map<String, Long>>은 다음 구조 <- DB에 int(10)이렇게 박혀 있음.
+1            1058           1  
+2            1059           2
+시그널 넘버 | 시그널 넘버    | 정렬 기준
+SN         | SN2           | CNT
+
+우리가 개조해서 사용하는 이클립스는 디버거도 안걸리고~
+
+인텔리제이에서 뜯어본 결과!
+
+int long long으로 박히고 있뜸!
+
+추측 : mybatis에서 select 결과가 int이기 때문에 (mapper에 String, Long)무시하고 int로 박아넣는다?
+
+----------------------------------------------------------------------
+
+Eclipse project -> Intellij로 넘어갈 경우 발생하는 문제.
+mybatis 문제. mybatis/mappers/가 존재하지 않는다!.
+이클립스에서는 있었음.
+->https://okky.kr/article/367152
+-> Intellij project structure -> project settings -> modules -> source folders에 src/main/resources(mapper가 들어있는 곳) 추가! 이때 exclude할 것은 exclude 시켜야만 한다.
+
+-----------------------------------------------------------------------
+
+이클립스 + mybatis 맘에 안드는점
+
+특젇 vo의 이너클래스를 resultType이나 parameterType으로 선언하면 잘 찾지 못한다. -> 잘 찾은 척 해놓고. 막상 런하면 에러!
